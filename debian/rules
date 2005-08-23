@@ -1,0 +1,9 @@
+#!/usr/bin/make -f
+
+DEB_AUTO_UPDATE_DEBIAN_CONTROL := yes
+
+include /usr/share/cdbs/1/rules/debhelper.mk
+
+common-install-arch common-install-indep:: common-install-impl
+common-install-impl::
+	dh_link usr/sbin/kanotix-terminalserver etc/init.d/kanotix-terminalserver

@@ -1,0 +1,6 @@
+*.desktop		usr/share/applnk/Kanotix/Services/
+kanotix-terminalserver	usr/sbin/
+etc			usr/share/kanotix-terminalserver/templates/miniroot/
+linuxrc			usr/share/kanotix-terminalserver/templates/miniroot/
+boot.msg		usr/share/kanotix-terminalserver/templates/tftpboot/
+german.kbd		usr/share/kanotix-terminalserver/templates/tftpboot/

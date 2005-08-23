@@ -1,0 +1,5 @@
+none       /proc       proc   defaults            0 0
+none       /sys        sysfs  defaults            0 0
+none       /dev/pts    devpts mode=0622           0 0
+/dev/fd0   /mnt/floppy auto   user,noauto,exec    0 0
+/dev/cdrom /mnt/cdrom  auto   user,noauto,exec,ro 0 0

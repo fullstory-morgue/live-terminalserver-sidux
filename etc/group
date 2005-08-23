@@ -1,0 +1,4 @@
+root::0:root
+knoppix::1000:knoppix
+slocate::21:root
+nobody::-1:nobody

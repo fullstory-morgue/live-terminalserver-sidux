@@ -1,0 +1,235 @@
+kanotix-terminalserver (0.5.38) unstable; urgency=low
+
+  * overhaul packaging.
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Tue, 23 Aug 2005 15:50:55 +0200
+
+kanotix-terminalserver (0.5.37) unstable; urgency=low
+
+  * use larger disk image. 
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Mon,  2 May 2005 00:52:37 +0200
+
+kanotix-terminalserver (0.5.36) unstable; urgency=low
+
+  * re- enable ash-kanotix fallback, but try busybox instead.
+  * remove "wheelmouse" as default option.
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Wed,  6 Apr 2005 18:03:25 +0200
+
+kanotix-terminalserver (0.5.35) unstable; urgency=low
+
+  * minor clean ups.
+  * add /dev/ub* support. 
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Wed,  6 Apr 2005 14:09:13 +0200
+
+kanotix-terminalserver (0.5.34) unstable; urgency=low
+
+  * switch to busybox.
+  * general clean up. 
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Wed,  6 Apr 2005 13:56:07 +0200
+
+kanotix-terminalserver (0.5.33) unstable; urgency=low
+
+  * add comments for busybox, no functional change.
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Sun,  3 Apr 2005 18:18:13 +0200
+
+kanotix-terminalserver (0.5-32) unstable; urgency=low
+
+  * add sysfs to the fstab. 
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Wed,  9 Feb 2005 11:49:48 +0100
+
+kanotix-terminalserver (0.5-31) unstable; urgency=low
+
+  * improve Kanotix integration. 
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Tue,  8 Feb 2005 20:35:39 +0100
+
+kanotix-terminalserver (0.5-30) unstable; urgency=low
+
+  * change pathnames. 
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Tue,  8 Feb 2005 20:11:53 +0100
+
+kanotix-terminalserver (0.5-29) unstable; urgency=low
+
+  * modify user messages. 
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Tue,  8 Feb 2005 19:29:34 +0100
+
+kanotix-terminalserver (0.5-28) unstable; urgency=low
+
+  * sync with knoppix-terminalserver 0.5-27. 
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Tue,  8 Feb 2005 18:01:36 +0100
+
+kanotix-terminalserver (0.5-27) unstable; urgency=low
+
+  * Name change for KANOTIX
+
+ -- Joerg Schirottke <master@kanotix.com>  Tue,  8 Feb 2005 15:18:00 +0100
+
+knoppix-terminalserver (0.5-26) unstable; urgency=low
+
+  * Copy losetup and some additional libs
+  * Squashfs autodetection in linuxrc
+
+ -- Joerg Schirottke <master@kanotix.com>  Fri,  3 Dec 2004 19:21:03 +0100
+
+knoppix-terminalserver (0.5-25) unstable; urgency=low
+
+  * Corrected path /etc/squid.conf -> /etc/squid/squid.conf for new squid version
+
+ -- root <knopper@linuxtag.net>  Mon, 16 Aug 2004 01:25:25 +0200
+
+knoppix-terminalserver (0.5-24) unstable; urgency=low
+
+  * Change -I to -A in iptables to enable interaction with knoppix-firewall
+
+ -- root <knopper@linuxtag.net>  Fri, 13 Aug 2004 06:21:25 +0200
+
+knoppix-terminalserver (0.5-23) unstable; urgency=low
+
+  * Workaround for Kernel 2.4.27 bug: Can't load ide-scsi and ide-cd at the same time
+
+ -- root <knopper@linuxtag.net>  Tue, 10 Aug 2004 17:15:49 +0200
+
+knoppix-terminalserver (0.5-22) unstable; urgency=low
+
+  * Add NX Server/Client option
+
+ -- root <knopper@linuxtag.net>  Tue, 10 Aug 2004 05:53:50 +0200
+
+knoppix-terminalserver (0.5-21) unstable; urgency=low
+
+  * Don't use own bootlogo, use /cdrom/boot/isolinux/logo.16
+
+ -- root <knopper@linuxtag.net>  Sun, 23 May 2004 01:05:54 +0200
+
+knoppix-terminalserver (0.5-20) unstable; urgency=low
+
+  * Corrected logo.16 for download edition
+
+ -- root <knopper@linuxtag.net>  Mon, 10 May 2004 02:34:05 +0200
+
+knoppix-terminalserver (0.5-19) unstable; urgency=low
+
+  * Fixed removal of ' with sed.
+
+ -- root <knopper@linuxtag.net>  Sun,  9 May 2004 21:25:43 +0200
+
+knoppix-terminalserver (0.5-18) unstable; urgency=low
+
+  * Added multiple-kernel support
+  * Added modprobe ide-scsi and ide-cd
+
+ -- root <knopper@linuxtag.net>  Mon,  1 Mar 2004 04:33:50 +0100
+
+knoppix-terminalserver (0.5-17) unstable; urgency=low
+
+  * New linuxutils library scheme (libacl)
+
+ -- root <knopper@linuxtag.net>  Sun,  8 Feb 2004 09:27:14 +0100
+
+knoppix-terminalserver (0.5-16) unstable; urgency=low
+
+  *  New bootlogo
+
+ -- root <knopper@linuxtag.net>  Tue, 20 Jan 2004 18:33:36 +0100
+
+knoppix-terminalserver (0.5-15) unstable; urgency=low
+
+  * Added 8139too to list of default-selected cards
+
+ -- root <knopper@linuxtag.net>  Mon, 22 Sep 2003 02:33:03 +0200
+
+knoppix-terminalserver (0.5-14) unstable; urgency=low
+
+  * Updated logo.16
+
+ -- root <knopper@linuxtag.net>  Mon, 22 Sep 2003 02:26:10 +0200
+
+knoppix-terminalserver (0.5-13) unstable; urgency=low
+
+  * Added "nodhcp" and "nomce" to default boot options
+
+ -- root <knopper@linuxtag.net>  Mon, 31 Mar 2003 00:50:11 +0200
+
+knoppix-terminalserver (0.5-12) unstable; urgency=low
+
+  * Updated boot logo
+
+ -- root <knopper@linuxtag.net>  Wed, 26 Mar 2003 15:50:31 +0100
+
+knoppix-terminalserver (0.5-11) unstable; urgency=low
+
+  * Use /tmp/ramdisk instead of /dev/ram*
+
+ -- root <knopper@linuxtag.net>  Tue, 10 Dec 2002 22:02:41 +0100
+
+knoppix-terminalserver (0.5-10) unstable; urgency=low
+
+  * Added spanish messages by Sergio Gonzalez <sergio.gonzalez@hispalinux.es>, Luis Llorente <luis.llorente@hispalinux.es>
+
+ -- root <knopper@linuxtag.net>  Fri,  6 Dec 2002 19:17:08 +0100
+
+knoppix-terminalserver (0.5-9) unstable; urgency=low
+
+  * Fixed mtab
+
+ -- root <knopper@linuxtag.net>  Fri,  8 Nov 2002 01:30:25 +0100
+
+knoppix-terminalserver (0.5-8) unstable; urgency=low
+
+  * replaced etc/mtab symlink by empty file
+
+ -- root <knopper@linuxtag.net>  Tue, 29 Oct 2002 01:07:35 +0100
+
+knoppix-terminalserver (0.5-7) unstable; urgency=low
+
+  * Added preliminary support for etherboot (thanks to Fabian Franz)
+  * dhcp3-server-specific paths
+
+ -- root <knopper@linuxtag.net>  Sun, 27 Oct 2002 19:15:53 +0100
+
+knoppix-terminalserver (0.5-6) unstable; urgency=low
+
+  * Added modified nfsdir patch from HJ Hornbeck (BSD license)
+
+ -- root <knopper@linuxtag.net>  Wed, 16 Oct 2002 18:47:09 +0200
+
+knoppix-terminalserver (0.5-5) unstable; urgency=low
+
+  * Fixed a possibly empty cp in module dependencies
+
+ -- root <knopper@linuxtag.net>  Fri,  4 Oct 2002 02:12:35 +0200
+
+knoppix-terminalserver (0.5-4) unstable; urgency=low
+
+  * Don't offer DNS cache if no nameservers present
+
+ -- root <knopper@linuxtag.net>  Wed, 18 Sep 2002 20:29:42 +0200
+
+knoppix-terminalserver (0.5-3) unstable; urgency=low
+
+  * Fixed netcardconfig helper and some status information for restart after
+    floppyconf
+
+ -- root <knopper@linuxtag.net>  Wed, 11 Sep 2002 00:23:23 +0200
+
+knoppix-terminalserver (0.5-2) unstable; urgency=low
+
+  * Auto-generate and copy netcard module dependencies to miniroot.gz
+
+ -- root <knopper@linuxtag.net>  Tue,  3 Sep 2002 17:49:17 +0200
+
+knoppix-terminalserver (0.5-1) unstable; urgency=low
+
+  * Initial Release.
+
+ -- Klaus Knopper <knoppix@knopper.net>  Wed, 21 Aug 2002 00:24:42 +0200
+

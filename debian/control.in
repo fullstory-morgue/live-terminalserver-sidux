@@ -1,0 +1,24 @@
+Source: kanotix-terminalserver
+Section: net
+Priority: optional
+Maintainer: Stefan Lippers-Hollmann <s.l-h@gmx.de>
+Build-Depends-Indep: @cdbs@
+Standards-Version: 3.6.2
+
+Package: kanotix-terminalserver
+Depends: dhcp3-server, tftpd-hpa, nfs-kernel-server, mknbi, syslinux, portmap, sudo, busybox-kanotix | ash-kanotix
+Recommends: squid, freenx
+Conflicts: knoppix-terminalserver
+Architecture: all
+Description: Starts all services necessary to boot KANOTIX via PXE
+ The KANOTIX terminalserver (busybox edition) is a collection of scripts 
+ that starts services like dhcp, tftp, nfs on a machine already running 
+ KANOTIX, so that the Kernel, a dynamically generated initrd and the compressed
+ loop-image are shared over the network.
+ To boot Kanotix over the network, you need a Linux-supported,
+ PXE-bootable Network card on each client machine. The server-side
+ startup scripts let you chose the range of dynamically assigned IP
+ addresses and some options concerning security (for example, whether
+ or not to allow root-Shells on the client machines).
+ .
+ Busybox edition, deprecate ash-kanotix.
