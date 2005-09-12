@@ -1,3 +1,9 @@
+kanotix-terminalserver (0.5.40) UNRELEASED; urgency=low
+
+  * NOT RELEASED YET
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Mon, 12 Sep 2005 03:17:34 +0200
+
 kanotix-terminalserver (0.5.39) unstable; urgency=low
 
   * employ kanotix-su.
