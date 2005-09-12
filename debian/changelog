@@ -1,3 +1,9 @@
+kanotix-terminalserver (0.5.39) unstable; urgency=low
+
+  * employ kanotix-su.
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Mon, 12 Sep 2005 03:15:36 +0200
+
 kanotix-terminalserver (0.5.38) unstable; urgency=low
 
   * overhaul packaging.

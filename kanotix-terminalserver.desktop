@@ -2,7 +2,7 @@
 Comment[de]=KANOTIX Terminal-Server starten (Remote-KANOTIX)
 Comment[es]=Arrancar KANOTIX Terminal Server (KANOTIX remoto)
 Comment=Start KANOTIX Terminal Server (Remote-KANOTIX)
-Exec=gksu -- /usr/sbin/kanotix-terminalserver
+Exec=/usr/sbin/kanotix-terminalserver
 Icon=kanotix
 Name[de]=KANOTIX Terminal-Server starten
 Name[es]=Arrancar KANOTIX Terminal Server

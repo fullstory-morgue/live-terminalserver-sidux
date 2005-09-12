@@ -6,7 +6,7 @@ Build-Depends-Indep: @cdbs@
 Standards-Version: 3.6.2
 
 Package: kanotix-terminalserver
-Depends: dhcp3-server, tftpd-hpa, nfs-kernel-server, mknbi, syslinux, portmap, sudo, busybox-kanotix | ash-kanotix
+Depends: dhcp3-server, tftpd-hpa, nfs-kernel-server, mknbi, syslinux, portmap, sudo, busybox-kanotix | ash-kanotix, kanotix-su
 Recommends: squid, freenx
 Conflicts: knoppix-terminalserver
 Architecture: all

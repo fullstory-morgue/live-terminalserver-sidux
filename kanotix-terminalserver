@@ -14,7 +14,7 @@ export PATH
 
 umask 022
 
-[ "`id -u`" != "0" ] && exec sudo "$0" "$@"
+[ "$UID" -ne 0 ] && exec kanotix-su $0 "$@"
 
 TITLE="KANOTIX Terminal Server"
 TMPSUFFIX="-kanotix-terminalserver-orig"
