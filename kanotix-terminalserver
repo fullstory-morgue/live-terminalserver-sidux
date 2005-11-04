@@ -238,7 +238,7 @@ dd if=/dev/zero of="$RAMDISK" bs="${MINISIZE}k" count=1
 mke2fs -L "KANOTIX Miniroot" -b 1024 -N 8192 -O none -F -q -m 0 "$RAMDISK" "${MINISIZE}"
 mount -o loop,rw -t ext2 "$RAMDISK" "$MINIROOT"
 rm -rf "$MINIROOT/lost+found"
-for i in cdrom dev etc KNOPPIX lib mnt modules/net modules/scsi proc static sys var/run; do
+for i in cdrom dev etc KNOPPIX lib mnt media modules/net modules/scsi proc static sys var/run; do
 mkdir -p "$MINIROOT/$i"
 done
 for i in bin boot opt sbin usr; do

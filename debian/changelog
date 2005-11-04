@@ -1,8 +1,8 @@
-kanotix-terminalserver (0.5.40) UNRELEASED; urgency=low
+kanotix-terminalserver (0.5.40) unstable; urgency=low
 
-  * NOT RELEASED YET
+  * switch from /mnt/ to /media/.
 
- -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Mon, 12 Sep 2005 03:17:34 +0200
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Fri,  4 Nov 2005 19:31:59 +0100
 
 kanotix-terminalserver (0.5.39) unstable; urgency=low
 

@@ -397,9 +397,9 @@ echo -n "${CRE}${BLUE}Creating directories and symlinks on ramdisk...${NORMAL}"
 mkdir -p /var/run /var/backups /var/cache/apache /var/local /var/lock/news \
          /var/nis /var/preserve /var/state/misc /var/tmp /var/lib \
 	 /var/spool/cups/tmp /var/lib/nessus \
-         /mnt/cdrom /mnt/floppy /mnt/hd /mnt/test \
+         /media/cdrom0 /media/floppy0 /mnt/hd /mnt/test \
          /home/knoppix /home/root /etc/sysconfig /etc/X11 /etc/cups
-chown knoppix.knoppix /home/knoppix
+chown knoppix:knoppix /home/knoppix
 # Create empty utmp and wtmp
 :> /var/run/utmp
 :> /var/run/wtmp
