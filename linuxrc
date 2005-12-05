@@ -178,7 +178,7 @@ exec /static/ash
 }
 
 # Load nfs modules
-NFSMODULES="$(cd /modules/net; echo af_packet.*o sunrpc.*o lockd.*o nfs.*o)"
+NFSMODULES="$(cd /modules/net; echo af_packet.*o sunrpc.*o lockd.*o nfs_acl.*o nfs.*o)"
 for i in $NFSMODULES; do $INSMOD /modules/net/$i 2>/dev/null; done
 
 # Check for misc modules in expert mode

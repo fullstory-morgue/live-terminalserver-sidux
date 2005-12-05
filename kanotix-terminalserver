@@ -280,14 +280,14 @@ for i in ${BIN_DEP}; do
 	done
 done
 
-cp /lib/libnss_files*.so.? /lib/libnss_dns*.so.? "${MINIROOT}/lib/"
+cp /lib/libnss_files*.so.? /lib/libnss_dns*.so.? /lib/ld-linux.so.? "${MINIROOT}/lib/"
 # KANOTIX support
 cp /lib/libattr.so.? /lib/libacl.so.? "${MINIROOT}/lib/"
 strip "${MINIROOT}"/lib/*
 # Copy device nodes
 cp -a /dev/{null,zero,console,cloop,hd*,sd*,ub*,init*,kmem,fd*,loop*,mem,ram*,*random,pts,psaux,ptmx,std*,sndstat,systty,tty,tty[0-9]*} "${MINIROOT}/dev/" &> /dev/null
 # Copy kernel modules
-cp /lib/modules/$KERNEL/kernel/*/*/{af_packet,sunrpc,lockd,nfs}.*o "${MINIROOT}/modules/net/"
+cp /lib/modules/$KERNEL/kernel/*/*/{af_packet,sunrpc,lockd,nfs_acl,nfs}.*o "${MINIROOT}/modules/net/"
 # New in Kernel 2.4
 for i in /lib/modules/$KERNEL/kernel/lib/crc32.*o; do
 cp "$i" "${MINIROOT}/modules/net/00_${i##*/}" 2>/dev/null

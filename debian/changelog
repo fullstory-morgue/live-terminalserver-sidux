@@ -1,8 +1,9 @@
-kanotix-terminalserver (0.5.41) UNRELEASED; urgency=low
+kanotix-terminalserver (0.5.41) unstable; urgency=low
 
-  * NOT RELEASED YET
+  * fix functionality due to changed kernel module/ pump structure, thanks to
+    panticz for contributing the patch.
 
- -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Fri,  4 Nov 2005 19:34:28 +0100
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Mon,  5 Dec 2005 23:46:48 +0100
 
 kanotix-terminalserver (0.5.40) unstable; urgency=low
 
