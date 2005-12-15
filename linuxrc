@@ -77,7 +77,9 @@ echo "${WHITE}Welcome to the ${CYAN}K${MAGENTA}A${YELLOW}N${WHITE}O${RED}T${GREE
 
 # Mount /proc and /dev/pts
 mount -t proc none /proc
-mount -t devpts none /dev/pts
+
+# Kernel 2.6
+mount -t sysfs /sys /sys >/dev/null 2>&1
 
 # Check if we are in interactive startup mode
 cmdline="$(cat /proc/cmdline 2>/dev/null)"
@@ -198,7 +200,7 @@ done
 fi
 # All interactively requested modules should be loaded now.
 
-# Check for ide-scsi supported CD-Roms et al.
+# Check for SCSI supported CD-Roms et al.
 test -f /proc/scsi/scsi && FOUND_SCSI="yes"
 
 # Disable kernel messages again
@@ -222,16 +224,18 @@ echo "6" > /proc/sys/kernel/printk
 [ -n "FOUND_NETWORK" ] || dropshell
 
 DHCP=""
-for i in 1 2 3; do
-echo -n "${CRE}${BLUE}DHCP Broadcasting for IP address ($i)... ${NORMAL}"
-pump -v && DHCP="true"
-[ -n "$DHCP" ] && break
-echo "${RED}No answer from network.${NORMAL}"
+# How many network cards should we probe for?
+for i in 0 1 2 3; do
+	ifconfig "eth$i" up >/dev/null 2>&1 || continue
+	echo -n "${CRE}${BLUE}DHCP Broadcasting for IP address (${MAGENTA}eth$i${BLUE})... ${NORMAL}"
+	pump -i eth$i && DHCP="eth$i"
+	[ -n "$DHCP" ] && break
+	echo "${RED}No answer from network.${NORMAL}"
 done
 [ -n "$DHCP" ] && echo "${GREEN}OK.${NORMAL}" || dropshell
 
 echo "${CRE} ${GREEN}Network card configuration: ${NORMAL}"
-ifconfig eth0
+ifconfig "$DHCP"
 
 portmap && echo "${CRE} ${GREEN}Portmapper started.${NORMAL}"
 
@@ -355,7 +359,7 @@ hash -r
 # Clean up /
 rm -rf /modules /static /*.old
 
-# New in Kernel 2.4.x: tempfs with variable ramdisk size.
+# New in Kernel 2.4.x: tmpfs with variable ramdisk size.
 # We check for available memory anyways and limit the ramdisks
 # to a reasonable size.
 FOUNDMEM="$(awk '/MemTotal/{print $2}' /proc/meminfo)"
@@ -369,7 +373,7 @@ echo "${CRE}${BLUE}Total memory found: ${YELLOW}${FOUNDMEM}${BLUE} kB${NORMAL}"
 # machine due to lack of Ram
 
 # Minimum size of additional ram partitions
-MINSIZE=2000
+MINSIZE=20000
 # At least this much memory minus 30% should remain when home and var are full.
 MINLEFT=16000
 # Maximum ramdisk size
@@ -429,11 +433,11 @@ ln -s /KNOPPIX/var/lib/nessus/plugins /var/lib/nessus/ 2>/dev/null
 cp -aus /KNOPPIX/var/* /var/ 2>/dev/null
 cp -aus /KNOPPIX/etc/* /etc/ 2>/dev/null
 # Make SURE that these are files, not links!
-rm -rf /etc/passwd /etc/shadow /etc/group \
+rm -rf /etc/ftpusers /etc/passwd /etc/shadow /etc/gshadow /etc/group \
        /etc/ppp /etc/isdn /etc/ssh /etc/ioctl.save \
        /etc/inittab /etc/network /etc/sudoers \
        /etc/init /etc/localtime /etc/dhcpc /etc/pnm2ppa.conf 2>/dev/null
-cp -a /KNOPPIX/etc/passwd /KNOPPIX/etc/shadow /KNOPPIX/etc/group \
+cp -a /KNOPPIX/etc/ftpusers /KNOPPIX/etc/passwd /KNOPPIX/etc/shadow /KNOPPIX/etc/gshadow /KNOPPIX/etc/group \
       /KNOPPIX/etc/ppp /KNOPPIX/etc/isdn /KNOPPIX/etc/ssh \
       /KNOPPIX/etc/inittab /KNOPPIX/etc/network /KNOPPIX/etc/sudoers \
       /KNOPPIX/sbin/init /KNOPPIX/etc/dhcpc /etc/ 2>/dev/null
@@ -449,6 +453,9 @@ fi
 # Diet libc bug workaround
 cp -f /KNOPPIX/etc/localtime /etc/localtime
 echo "${BLUE}Done.${NORMAL}"
+
+# Must exist for samba to work
+[ -d /var/lib/samba ] && :> /var/lib/samba/unexpected.tdb
 
 # Kernel 2.6 bug?
 chmod 1777 /var/tmp

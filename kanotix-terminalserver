@@ -238,13 +238,17 @@ dd if=/dev/zero of="$RAMDISK" bs="${MINISIZE}k" count=1
 mke2fs -L "KANOTIX Miniroot" -b 1024 -N 8192 -O none -F -q -m 0 "$RAMDISK" "${MINISIZE}"
 mount -o loop,rw -t ext2 "$RAMDISK" "$MINIROOT"
 rm -rf "$MINIROOT/lost+found"
-for i in cdrom dev etc KNOPPIX lib mnt media modules/net modules/scsi proc static sys var/run; do
-mkdir -p "$MINIROOT/$i"
+
+for i in cdrom dev etc KNOPPIX lib mnt media modules/net modules/scsi proc static sys tmp var/run; do
+	mkdir -p "$MINIROOT/$i"
 done
+
 for i in bin boot opt sbin usr; do
-ln -s /KNOPPIX/"$i" "$MINIROOT/$i"
+	ln -s /KNOPPIX/"$i" "$MINIROOT/$i"
 done
-ln -s /var/tmp "$MINIROOT"/tmp
+
+ln -s /tmp "$MINIROOT"/var/tmp
+
 # Copy Templates
 cp -a /usr/share/kanotix-terminalserver/templates/miniroot/* "${MINIROOT}/"
 
@@ -276,25 +280,28 @@ fi
 for i in ${BIN_DEP}; do
 	cp -a "$i" "${MINIROOT}/static/"
 	ldd "$i" | while read lib skip path relax; do
-		[ -n "$path" ] && cp -up "$path" "${MINIROOT}/lib/${lib##*/}"
+		if [ -f "$lib" ]; then
+			cp -up "$lib" "${MINIROOT}/lib/${lib##*/}"
+		else
+			[ -n "$path" ] && cp -up "$path" "${MINIROOT}/lib/${lib##*/}"
+		fi
 	done
 done
 
-cp /lib/libnss_files*.so.? /lib/libnss_dns*.so.? /lib/ld-linux.so.? "${MINIROOT}/lib/"
-# KANOTIX support
-cp /lib/libattr.so.? /lib/libacl.so.? "${MINIROOT}/lib/"
+cp /lib/libattr.so.? /lib/libacl.so.? /lib/libnss_files*.so.? /lib/libnss_dns*.so.? /lib/ld-linux.so.? "${MINIROOT}/lib/"
 strip "${MINIROOT}"/lib/*
 # Copy device nodes
-cp -a /dev/{null,zero,console,cloop,hd*,sd*,ub*,init*,kmem,fd*,loop*,mem,ram*,*random,pts,psaux,ptmx,std*,sndstat,systty,tty,tty[0-9]*} "${MINIROOT}/dev/" &> /dev/null
+cp -a /dev/{null,zero,console,cloop*,hd*,sd*,ub*,init*,kmem,fd*,loop*,mem,ram*,*random,pts,psaux,ptmx,std*,sndstat,systty,tty,tty[0-9]*} "${MINIROOT}/dev/" &> /dev/null
 # Copy kernel modules
 cp /lib/modules/$KERNEL/kernel/*/*/{af_packet,sunrpc,lockd,nfs_acl,nfs}.*o "${MINIROOT}/modules/net/"
 # New in Kernel 2.4
 for i in /lib/modules/$KERNEL/kernel/lib/crc32.*o; do
 cp "$i" "${MINIROOT}/modules/net/00_${i##*/}" 2>/dev/null
 done
-cp /lib/modules/$KERNEL/kernel/*/*/cloop.*o "${MINIROOT}/modules/"
+cp /lib/modules/$KERNEL/kernel/*/*/cloop.*o /lib/modules/$KERNEL/kernel/*/*/unionfs.*o "${MINIROOT}/modules/"
+
 for i in $MODULES; do
-find /lib/modules/$KERNEL/kernel/drivers/net -name "$i" -exec cp {} "${MINIROOT}/modules/net/" \;
+	find /lib/modules/$KERNEL/kernel/drivers/net -name "$i" -exec cp {} "${MINIROOT}/modules/net/" \;
 done
 
 # Find and copy module dependencies as well
@@ -528,7 +535,7 @@ esac
 
 rm -f "$TMP"
 
-NETDEVICES="$(cat /proc/net/dev | awk -F: '/eth.:|tr.:/{print $1}')"
+NETDEVICES="$(cat /proc/net/dev | awk -F: '/eth.:|lan.:|tr.:|wlan.:|ath.:|ra.:|lan.:|wireless.:/{print $1}')"
 DEVICELIST=""
 for DEVICE in $NETDEVICES; do DEVICELIST="$DEVICELIST ${DEVICE} Netzwerkkarte_${DEVICE##eth}"; done
 rm -f "$TMP"
@@ -575,7 +582,7 @@ echo "IPRANGE_FROM=\"$IPRANGE_FROM\"" >>"$CONFIG"
 echo "IPRANGE_TO=\"$IPRANGE_TO\"" >>"$CONFIG"
 
 find /lib/modules/$KERNEL/kernel/drivers/net -name \*.\*o | awk -F/ '{print $NF}' > $TMP
-CARDLIST=$(echo -e $(modinfo -d $(find /lib/modules/$KERNEL/kernel/drivers/net -name \*.\*o) | sed 's/"$/"\\n/g; s/>$/>\\n/g') | paste $TMP - | sort | sed 's/<none>/Kernel-Module/g;' | awk -F"\t" '{printf("%s|%s|",$1,$2)}; /^8139too|^3c59x|^tulip|^eepro100|^sis900/{ print "on|" }; { print "off|" }' | grep "\..*o")
+CARDLIST=$(echo -e $(modinfo -d $(find /lib/modules/$KERNEL/kernel/drivers/net -name \*.\*o) | sed 's/"$/"\\n/g; s/>$/>\\n/g') | paste $TMP - | sort | sed 's/<none>/Kernel-Module/g;' | awk -F"\t" '{printf("%s|%s|",$1,$2)}; /^8139too|^3c59x|^tulip|^eepro100|^sis900/{ print "on|" }; { print "off|" }' | grep "\..*o" | tr -d '\n')
 rm -f "$TMP"
 IFS='|'
 $DIALOG --clear --backtitle "$BACKTITLE" --title "$TITLE_CARDS" --checklist "$MESSAGE_CARDS" 22 70 15 \

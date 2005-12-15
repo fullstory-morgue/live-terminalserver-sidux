@@ -1,3 +1,18 @@
+kanotix-terminalserver (0.5.42) unstable; urgency=low
+
+  * backport bugfixes from  knoppix-terminalserver 0.5-33, changes by Klaus 
+    Knopper <knopper@knopper.net>:
+    - Add support for booting from eth[0-3].
+    - Kernel 2.6 updates.
+    - Added ath/wlan cards to list.
+    - Remove newline from modules list.
+    - Added chmod 1777 workaround for unwritable /var/tmp (only happens with
+      Kernel 2.6.9).
+  * bump compat level to 5.
+  * remove virtual knoppix packages.
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Tue, 13 Dec 2005 10:27:16 +0100
+
 kanotix-terminalserver (0.5.41) unstable; urgency=low
 
   * fix functionality due to changed kernel module/ pump structure, thanks to

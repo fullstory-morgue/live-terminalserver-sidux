@@ -6,9 +6,8 @@ Build-Depends-Indep: @cdbs@
 Standards-Version: 3.6.2
 
 Package: kanotix-terminalserver
-Depends: dhcp3-server, tftpd-hpa, nfs-kernel-server, mknbi, syslinux, portmap, sudo, busybox-kanotix | ash-kanotix, kanotix-su
+Depends: dhcp3-server, tftpd-hpa, nfs-kernel-server, mknbi, syslinux, portmap, sudo, busybox-kanotix, kanotix-su
 Recommends: squid, freenx
-Conflicts: knoppix-terminalserver
 Architecture: all
 Description: Starts all services necessary to boot KANOTIX via PXE
  The KANOTIX terminalserver (busybox edition) is a collection of scripts 
