@@ -1,3 +1,10 @@
+kanotix-terminalserver (0.5.43) UNRELEASED; urgency=low
+
+  * NOT RELEASED YET
+  * fix permissions for /etc/init.d/kanotix-terminalserver.
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Thu, 15 Dec 2005 11:11:05 +0100
+
 kanotix-terminalserver (0.5.42) unstable; urgency=low
 
   * backport bugfixes from  knoppix-terminalserver 0.5-33, changes by Klaus 
