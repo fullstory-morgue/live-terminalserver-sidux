@@ -1,9 +1,9 @@
-kanotix-terminalserver (0.5.43) UNRELEASED; urgency=low
+kanotix-terminalserver (0.5.43) unstable; urgency=low
 
-  * NOT RELEASED YET
   * fix permissions for /etc/init.d/kanotix-terminalserver.
+  * revert latest changes (back to r678), todo: apply them properly.
 
- -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Thu, 15 Dec 2005 11:11:05 +0100
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Sun, 25 Dec 2005 23:38:17 +0100
 
 kanotix-terminalserver (0.5.42) unstable; urgency=low
 
