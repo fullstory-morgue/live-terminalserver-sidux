@@ -238,17 +238,13 @@ dd if=/dev/zero of="$RAMDISK" bs="${MINISIZE}k" count=1
 mke2fs -L "KANOTIX Miniroot" -b 1024 -N 8192 -O none -F -q -m 0 "$RAMDISK" "${MINISIZE}"
 mount -o loop,rw -t ext2 "$RAMDISK" "$MINIROOT"
 rm -rf "$MINIROOT/lost+found"
-
-for i in cdrom dev etc KNOPPIX lib mnt media modules/net modules/scsi proc static sys tmp var/run; do
-	mkdir -p "$MINIROOT/$i"
+for i in cdrom dev etc KNOPPIX lib mnt media modules/net modules/scsi proc static sys var/run; do
+mkdir -p "$MINIROOT/$i"
 done
-
 for i in bin boot opt sbin usr; do
-	ln -s /KNOPPIX/"$i" "$MINIROOT/$i"
+ln -s /KNOPPIX/"$i" "$MINIROOT/$i"
 done
-
-ln -s /tmp "$MINIROOT"/var/tmp
-
+ln -s /var/tmp "$MINIROOT"/tmp
 # Copy Templates
 cp -a /usr/share/kanotix-terminalserver/templates/miniroot/* "${MINIROOT}/"
 
@@ -280,24 +276,27 @@ fi
 for i in ${BIN_DEP}; do
 	cp -a "$i" "${MINIROOT}/static/"
 	ldd "$i" | while read lib skip path relax; do
-		if [ -f "$lib" ]; then
-			cp -up "$lib" "${MINIROOT}/lib/${lib##*/}"
-		else
-			[ -n "$path" ] && cp -up "$path" "${MINIROOT}/lib/${lib##*/}"
-		fi
+		[ -n "$path" ] && cp -up "$path" "${MINIROOT}/lib/${lib##*/}"
 	done
 done
 
-cp /lib/libattr.so.? /lib/libacl.so.? /lib/libnss_files*.so.? /lib/libnss_dns*.so.? /lib/ld-linux.so.? "${MINIROOT}/lib/"
+cp /lib/libnss_files*.so.? /lib/libnss_dns*.so.? /lib/ld-linux.so.? "${MINIROOT}/lib/"
+
+# KANOTIX support
+cp /lib/libattr.so.? /lib/libacl.so.? "${MINIROOT}/lib/"
 strip "${MINIROOT}"/lib/*
+
 # Copy device nodes
 cp -a /dev/{null,zero,console,cloop*,hd*,sd*,ub*,init*,kmem,fd*,loop*,mem,ram*,*random,pts,psaux,ptmx,std*,sndstat,systty,tty,tty[0-9]*} "${MINIROOT}/dev/" &> /dev/null
+
 # Copy kernel modules
 cp /lib/modules/$KERNEL/kernel/*/*/{af_packet,sunrpc,lockd,nfs_acl,nfs}.*o "${MINIROOT}/modules/net/"
+
 # New in Kernel 2.4
 for i in /lib/modules/$KERNEL/kernel/lib/crc32.*o; do
-cp "$i" "${MINIROOT}/modules/net/00_${i##*/}" 2>/dev/null
+	cp "$i" "${MINIROOT}/modules/net/00_${i##*/}" 2>/dev/null
 done
+
 cp /lib/modules/$KERNEL/kernel/*/*/cloop.*o /lib/modules/$KERNEL/kernel/*/*/unionfs.*o "${MINIROOT}/modules/"
 
 for i in $MODULES; do
@@ -535,7 +534,7 @@ esac
 
 rm -f "$TMP"
 
-NETDEVICES="$(cat /proc/net/dev | awk -F: '/eth.:|lan.:|tr.:|wlan.:|ath.:|ra.:|lan.:|wireless.:/{print $1}')"
+NETDEVICES="$(cat /proc/net/dev | awk -F: '/eth.:|tr.:|wlan.:|ath.:|ra.:|lan.:|wireless.:|firewire.:/{print $1}')"
 DEVICELIST=""
 for DEVICE in $NETDEVICES; do DEVICELIST="$DEVICELIST ${DEVICE} Netzwerkkarte_${DEVICE##eth}"; done
 rm -f "$TMP"

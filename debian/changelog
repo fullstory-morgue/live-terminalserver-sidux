@@ -1,8 +1,9 @@
-kanotix-terminalserver (0.5.44) UNRELEASED; urgency=low
+kanotix-terminalserver (0.5.44) unstable; urgency=low
 
-  * NOT RELEASED YET
+  * re- add selected fixes from knoppix-terminalserver 0.5-33.
+  * add lanX, wirelessX, firewireX support again.
 
- -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Sun, 25 Dec 2005 23:40:33 +0100
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Wed, 15 Feb 2006 23:59:40 +0100
 
 kanotix-terminalserver (0.5.43) unstable; urgency=low
 
@@ -13,7 +14,7 @@ kanotix-terminalserver (0.5.43) unstable; urgency=low
 
 kanotix-terminalserver (0.5.42) unstable; urgency=low
 
-  * backport bugfixes from  knoppix-terminalserver 0.5-33, changes by Klaus 
+  * backport bugfixes from knoppix-terminalserver 0.5-33, changes by Klaus 
     Knopper <knopper@knopper.net>:
     - Add support for booting from eth[0-3].
     - Kernel 2.6 updates.
