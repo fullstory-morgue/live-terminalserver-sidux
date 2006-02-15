@@ -2,8 +2,10 @@ kanotix-terminalserver (0.5.44) unstable; urgency=low
 
   * re- add selected fixes from knoppix-terminalserver 0.5-33.
   * add lanX, wirelessX, firewireX support again.
+  * remove cdbs auto- update feature.
+  * bump compat level to 5.
 
- -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Wed, 15 Feb 2006 23:59:40 +0100
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Thu, 16 Feb 2006 00:08:51 +0100
 
 kanotix-terminalserver (0.5.43) unstable; urgency=low
 
