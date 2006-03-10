@@ -8,6 +8,17 @@
 #
 # Squashfs autodetection for KANOTIX by Joerg Schirottke <master@kanotix.com>
 
+# override tool behaviour through distro-defaults
+
+FLL_DISTRO_NAME="Kanotix"
+FLL_LIVE_USER="knoppix"
+FLL_IMAGE_DIR="KNOPPIX"
+FLL_IMAGE_FILE="KNOPPIX"
+FLL_IMAGE_LOCATION="$FLL_IMAGE_DIR/$FLL_IMAGE_FILE"
+FLL_MOUNTPOINT="/KNOPPIX"
+
+[ -r /etc/default/distro ] && . /etc/default/distro
+
 # hardcoded but configurable options
 # Default maximum size of dynamic ramdisk in kilobytes
 RAMSIZE=1000000
@@ -171,7 +182,7 @@ echo ""
 echo "Additional builtin commands avaliable:"
 help
 echo ""
-PS1="knoppix# "
+PS1="${FLL__LIVE_USER}# "
 export PS1
 echo "6" > /proc/sys/kernel/printk
 # Allow signals
@@ -280,7 +291,7 @@ EOT
  # try mounting it, first with "/knoppix"
  echo -n "${CRE}${BLUE}Trying to mount CD on ${MAGENTA}$NFSROOT${BLUE}...${NORMAL}"
  /static/mount -t nfs -o ro,rsize=8192,wsize=8192,hard,intr$SECUREOPTIONS \
-  "${NFSROOT}:/knoppix" /cdrom > /dev/null 2>&1  && NFSDIR="${NFSROOT}:/knoppix"
+  "${NFSROOT}:/${FLL_LIVE_USER}" /cdrom > /dev/null 2>&1  && NFSDIR="${NFSROOT}:/${FLL_LIVE_USER}"
 
 # then with "/cdrom"
  [ -z "$NFSDIR" ] && /static/mount -t nfs -o \
@@ -307,9 +318,9 @@ fi
 [ -z "$MOUNTED" ] && dropshell
 
 FOUND_KNOPPIX=""
-if test -f /cdrom/KNOPPIX/KNOPPIX
+if test -f /cdrom/${FLL_IMAGE_LOCATION}
 then
-echo -n "${CRE} ${GREEN}Accessing KANOTIX CDROM image at ${MAGENTA}$NFSDIR${GREEN}...${NORMAL}"
+echo -n "${CRE} ${GREEN}Accessing ${FLL_DISTRO_NAME} CDROM image at ${MAGENTA}$NFSDIR${GREEN}...${NORMAL}"
 FOUND_KNOPPIX="true"
 else
 dropshell
@@ -322,22 +333,22 @@ fi
 # echo "6" > /proc/sys/kernel/printk
 
 # try squashfs
-losetup /dev/loop0 /cdrom/KNOPPIX/KNOPPIX
-mount -t squashfs -o ro$SECUREOPTIONS /dev/loop0 /KNOPPIX 2>/dev/null || FOUND_KNOPPIX=""
+losetup /dev/loop0 /cdrom/${FLL_IMAGE_LOCATION}
+mount -t squashfs -o ro$SECUREOPTIONS /dev/loop0 ${FLL_MOUNTPOINT} 2>/dev/null || FOUND_KNOPPIX=""
 # fallback to cloop
 if [ -z "$FOUND_KNOPPIX" ]; then
 losetup -d /dev/loop0
-$INSMOD /modules/cloop.*o file=/cdrom/KNOPPIX/KNOPPIX
-mountit /dev/cloop /KNOPPIX "-o ro$SECUREOPTIONS" || FOUND_KNOPPIX=""
+$INSMOD /modules/cloop.*o file=/cdrom/${FLL_IMAGE_LOCATION}
+mountit /dev/cloop ${FLL_MOUNTPOINT} "-o ro$SECUREOPTIONS" || FOUND_KNOPPIX=""
 fi
 
 # Final test if everything succeeded.
 if test -n "$FOUND_KNOPPIX"
 then
 # copy library cache
-cat /KNOPPIX/etc/ld.so.cache > /etc/ld.so.cache
+cat ${FLL_MOUNTPOINT}/etc/ld.so.cache > /etc/ld.so.cache
 # Difficult: move library directory
-/KNOPPIX/lib/ld-linux.so.2 --library-path /KNOPPIX/lib /KNOPPIX/bin/mv -f /lib /lib.old && /KNOPPIX/lib/ld-linux.so.2 --library-path /KNOPPIX/lib /KNOPPIX/bin/ln -s /KNOPPIX/lib /lib
+${FLL_MOUNTPOINT}/lib/ld-linux.so.2 --library-path ${FLL_MOUNTPOINT}/lib ${FLL_MOUNTPOINT}/bin/mv -f /lib /lib.old && ${FLL_MOUNTPOINT}/lib/ld-linux.so.2 --library-path ${FLL_MOUNTPOINT}/lib ${FLL_MOUNTPOINT}/bin/ln -s ${FLL_MOUNTPOINT}/lib /lib
 
 echo ""
 
@@ -350,7 +361,7 @@ PATH="/sbin:/bin:/usr/sbin:/usr/bin:/usr/X11R6/bin:."
 export PATH
 
 # Debian weirdness
-/bin/cp -a /KNOPPIX/etc/alternatives /etc/ 2>/dev/null
+/bin/cp -a ${FLL_MOUNTPOINT}/etc/alternatives /etc/ 2>/dev/null
 
 # From here, we should have all essential commands available.
 hash -r
@@ -401,45 +412,45 @@ mkdir -p /var/run /var/backups /var/cache/apache /var/local /var/lock/news \
          /var/nis /var/preserve /var/state/misc /var/tmp /var/lib \
 	 /var/spool/cups/tmp /var/lib/nessus \
          /media/cdrom0 /media/floppy0 /mnt/hd /mnt/test \
-         /home/knoppix /home/root /etc/sysconfig /etc/X11 /etc/cups
-chown knoppix:knoppix /home/knoppix
+         /home/${FLL_LIVE_USER} /home/root /etc/sysconfig /etc/X11 /etc/cups
+chown ${FLL_LIVE_USER}:${FLL_LIVE_USER} /home/${FLL_LIVE_USER}
 # Create empty utmp and wtmp
 :> /var/run/utmp
 :> /var/run/wtmp
 # CUPS wants writable files. :-/
-cp -a /KNOPPIX/etc/cups/*.conf /etc/cups/ 2>/dev/null
+cp -a ${FLL_MOUNTPOINT}/etc/cups/*.conf /etc/cups/ 2>/dev/null
 # All files in here should be size zero after Knoppix.clean was run
-cp -a /KNOPPIX/var/local /KNOPPIX/var/games /KNOPPIX/var/log \
-      /KNOPPIX/var/spool /var/ 2>/dev/null
-cp -a /KNOPPIX/var/lib/games /KNOPPIX/var/lib/wine \
-      /KNOPPIX/var/lib/nfs /KNOPPIX/var/lib/xkb /KNOPPIX/var/lib/isdn \
-      /KNOPPIX/var/lib/kdm /KNOPPIX/var/lib/pcmcia \
+cp -a ${FLL_MOUNTPOINT}/var/local ${FLL_MOUNTPOINT}/var/games ${FLL_MOUNTPOINT}/var/log \
+      ${FLL_MOUNTPOINT}/var/spool /var/ 2>/dev/null
+cp -a ${FLL_MOUNTPOINT}/var/lib/games ${FLL_MOUNTPOINT}/var/lib/wine \
+      ${FLL_MOUNTPOINT}/var/lib/nfs ${FLL_MOUNTPOINT}/var/lib/xkb ${FLL_MOUNTPOINT}/var/lib/isdn \
+      ${FLL_MOUNTPOINT}/var/lib/kdm ${FLL_MOUNTPOINT}/var/lib/pcmcia \
       /var/lib/ 2>/dev/null
 # Problematic directories in /var/lib (lots and lots of inodes)
-ln -s /KNOPPIX/var/lib/dpkg /KNOPPIX/var/lib/apt /KNOPPIX/var/lib/doc-base \
-      /KNOPPIX/var/lib/gnome /KNOPPIX/var/lib/kde \
-      /KNOPPIX/var/lib/scrollkeeper /KNOPPIX/var/lib/texmf \
+ln -s ${FLL_MOUNTPOINT}/var/lib/dpkg ${FLL_MOUNTPOINT}/var/lib/apt ${FLL_MOUNTPOINT}/var/lib/doc-base \
+      ${FLL_MOUNTPOINT}/var/lib/gnome ${FLL_MOUNTPOINT}/var/lib/kde \
+      ${FLL_MOUNTPOINT}/var/lib/scrollkeeper ${FLL_MOUNTPOINT}/var/lib/texmf \
       /var/lib/ 2>/dev/null
 # Debian-apt
-ln -s /KNOPPIX/var/cache/apt /var/cache/ 2>/dev/null
-ln -s /KNOPPIX/etc/skel /KNOPPIX/etc/nessus \
+ln -s ${FLL_MOUNTPOINT}/var/cache/apt /var/cache/ 2>/dev/null
+ln -s ${FLL_MOUNTPOINT}/etc/skel ${FLL_MOUNTPOINT}/etc/nessus \
       /etc/ 2>/dev/null
-ln -s /KNOPPIX/dev/* /dev/ 2>/dev/null
+ln -s ${FLL_MOUNTPOINT}/dev/* /dev/ 2>/dev/null
 # Index files can be HUGE, so better replace cache/man tree by links later
 # cp -a /KNOPPIX/var/cache/man /var/cache/ 2>/dev/null
-ln -s /KNOPPIX/var/lib/nessus/plugins /var/lib/nessus/ 2>/dev/null
+ln -s ${FLL_MOUNTPOINT}/var/lib/nessus/plugins /var/lib/nessus/ 2>/dev/null
 # Create links from CDROM for UNWRITABLE (remaining) files
-cp -aus /KNOPPIX/var/* /var/ 2>/dev/null
-cp -aus /KNOPPIX/etc/* /etc/ 2>/dev/null
+cp -aus ${FLL_MOUNTPOINT}/var/* /var/ 2>/dev/null
+cp -aus ${FLL_MOUNTPOINT}/etc/* /etc/ 2>/dev/null
 # Make SURE that these are files, not links!
 rm -rf /etc/passwd /etc/shadow /etc/group \
        /etc/ppp /etc/isdn /etc/ssh /etc/ioctl.save \
        /etc/inittab /etc/network /etc/sudoers \
        /etc/init /etc/localtime /etc/dhcpc /etc/pnm2ppa.conf 2>/dev/null
-cp -a /KNOPPIX/etc/passwd /KNOPPIX/etc/shadow /KNOPPIX/etc/group \
-      /KNOPPIX/etc/ppp /KNOPPIX/etc/isdn /KNOPPIX/etc/ssh \
-      /KNOPPIX/etc/inittab /KNOPPIX/etc/network /KNOPPIX/etc/sudoers \
-      /KNOPPIX/sbin/init /KNOPPIX/etc/dhcpc /etc/ 2>/dev/null
+cp -a ${FLL_MOUNTPOINT}/etc/passwd ${FLL_MOUNTPOINT}/etc/shadow ${FLL_MOUNTPOINT}/etc/group \
+      ${FLL_MOUNTPOINT}/etc/ppp ${FLL_MOUNTPOINT}/etc/isdn ${FLL_MOUNTPOINT}/etc/ssh \
+      ${FLL_MOUNTPOINT}/etc/inittab ${FLL_MOUNTPOINT}/etc/network ${FLL_MOUNTPOINT}/etc/sudoers \
+      ${FLL_MOUNTPOINT}/sbin/init ${FLL_MOUNTPOINT}/etc/dhcpc /etc/ 2>/dev/null
 
 if [ -n "$SECURE" -a -f /etc/inittab.secure ]; then
 rm -f /etc/inittab
@@ -450,7 +461,7 @@ fi
 :> /etc/ioctl.save
 :> /etc/pnm2ppa.conf
 # Diet libc bug workaround
-cp -f /KNOPPIX/etc/localtime /etc/localtime
+cp -f ${FLL_MOUNTPOINT}/etc/localtime /etc/localtime
 echo "${BLUE}Done.${NORMAL}"
 
 # Must exist for samba to work
@@ -484,7 +495,7 @@ echo ""
 echo "Additional builtin commands avaliable:"
 help
 echo ""
-PS1="knoppix# "
+PS1="${FLL_LIVE_USER}# "
 export PS1
 echo "6" > /proc/sys/kernel/printk
 # Allow signals
