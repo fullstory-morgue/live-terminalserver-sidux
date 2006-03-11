@@ -239,7 +239,7 @@ EOT
 mkinitrd(){
 # Replaces the mkinitrd script that is normally present
 echo "Making Mini Rootdisk."
-MINISIZE=6000 # In kilobytes
+MINISIZE=16384 # In kilobytes, we're currently (2.6.14) at 10 MB for default options!
 MINIROOT="/tmp/kanotix-terminalserver-miniroot"
 RAMDEV=""
 rm -rf "$MINIROOT"
@@ -250,7 +250,7 @@ dd if=/dev/zero of="$RAMDISK" bs="${MINISIZE}k" count=1
 mke2fs -L "${FLL_DISTRO_NAME} Miniroot" -b 1024 -N 8192 -O none -F -q -m 0 "$RAMDISK" "${MINISIZE}"
 mount -o loop,rw -t ext2 "$RAMDISK" "$MINIROOT"
 rm -rf "$MINIROOT/lost+found"
-for i in cdrom dev etc ${FLL_MEDIA_DIR} lib mnt media modules/net modules/scsi proc static sys var/run; do
+for i in cdrom dev etc etc/default lib mnt media modules/net modules/scsi proc static sys var/run "${FLL_MEDIA_DIR}"; do
 mkdir -p "$MINIROOT/$i"
 done
 for i in bin boot opt sbin usr; do
@@ -259,6 +259,7 @@ done
 ln -s /var/tmp "$MINIROOT"/tmp
 # Copy Templates
 cp -a /usr/share/kanotix-terminalserver/templates/miniroot/* "${MINIROOT}/"
+cat /etc/default/distro >"${MINIROOT}/etc/default/distro" &>/dev/null
 
 # Copy Programs
 if [ -f /bin/busybox ]; then

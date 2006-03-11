@@ -1,8 +1,10 @@
-kanotix-terminalserver (0.5.46) UNRELEASED; urgency=low
+kanotix-terminalserver (0.5.46) unstable; urgency=low
 
-  * NOT RELEASED YET
+  * fix distro-defaults transition problems.
+  * make increase size for minirooot from 6 MB to 10, we're at 10 MB with a
+    2.6.14 kernel!
 
- -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Fri, 10 Mar 2006 01:22:24 +0100
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Sat, 11 Mar 2006 18:29:49 +0100
 
 kanotix-terminalserver (0.5.45) unstable; urgency=low
 

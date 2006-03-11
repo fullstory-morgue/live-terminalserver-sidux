@@ -8,17 +8,6 @@
 #
 # Squashfs autodetection for KANOTIX by Joerg Schirottke <master@kanotix.com>
 
-# override tool behaviour through distro-defaults
-
-FLL_DISTRO_NAME="Kanotix"
-FLL_LIVE_USER="knoppix"
-FLL_IMAGE_DIR="KNOPPIX"
-FLL_IMAGE_FILE="KNOPPIX"
-FLL_IMAGE_LOCATION="$FLL_IMAGE_DIR/$FLL_IMAGE_FILE"
-FLL_MOUNTPOINT="/KNOPPIX"
-
-[ -r /etc/default/distro ] && . /etc/default/distro
-
 # hardcoded but configurable options
 # Default maximum size of dynamic ramdisk in kilobytes
 RAMSIZE=1000000
@@ -85,6 +74,17 @@ umask 022
 
 # Be verbose
 echo "${WHITE}Welcome to the ${CYAN}K${MAGENTA}A${YELLOW}N${WHITE}O${RED}T${GREEN}I${BLUE}X${WHITE} Terminal Client!${NORMAL}"
+
+# override tool behaviour through distro-defaults
+FLL_DISTRO_NAME="Kanotix"
+FLL_LIVE_USER="knoppix"
+FLL_IMAGE_DIR="KNOPPIX"
+FLL_IMAGE_FILE="KNOPPIX"
+FLL_IMAGE_LOCATION="$FLL_IMAGE_DIR/$FLL_IMAGE_FILE"
+FLL_MOUNTPOINT="/KNOPPIX"
+
+test -r /etc/default/distro && . /etc/default/distro
+#echo "Visit us at irc://$FLL_IRC_SERVER:$FLL_IRC_PORT/$FLL_IRC_CHANNEL"
 
 # Mount /proc and /dev/pts
 mount -t proc none /proc
