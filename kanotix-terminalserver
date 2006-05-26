@@ -259,7 +259,7 @@ done
 ln -s /var/tmp "$MINIROOT"/tmp
 # Copy Templates
 cp -a /usr/share/kanotix-terminalserver/templates/miniroot/* "${MINIROOT}/"
-cat /etc/default/distro >"${MINIROOT}/etc/default/distro" &>/dev/null
+cat /etc/default/distro > "${MINIROOT}/etc/default/distro"
 
 # Copy Programs
 if [ -f /bin/busybox ]; then
@@ -310,7 +310,7 @@ for i in /lib/modules/$KERNEL/kernel/lib/crc32.*o; do
 	cp "$i" "${MINIROOT}/modules/net/00_${i##*/}" 2>/dev/null
 done
 
-cp /lib/modules/$KERNEL/kernel/*/*/cloop.*o /lib/modules/$KERNEL/kernel/*/*/unionfs.*o "${MINIROOT}/modules/"
+cp /lib/modules/$KERNEL/extra/cloop.*o /lib/modules/$KERNEL/kernel/*/*/unionfs.*o "${MINIROOT}/modules/"
 
 for i in $MODULES; do
 	find /lib/modules/$KERNEL/kernel/drivers/net -name "$i" -exec cp {} "${MINIROOT}/modules/net/" \;

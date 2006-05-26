@@ -1,8 +1,8 @@
-kanotix-terminalserver (0.5.47) UNRELEASED; urgency=low
+kanotix-terminalserver (0.5.47) unstable; urgency=low
 
-  * NOT RELEASED YET
+  * bugfixes provided by panticz, thanks a lot.
 
- -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Sat, 11 Mar 2006 18:33:34 +0100
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Sat, 27 May 2006 01:01:28 +0200
 
 kanotix-terminalserver (0.5.46) unstable; urgency=low
 
