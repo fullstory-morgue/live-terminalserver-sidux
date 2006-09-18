@@ -1,3 +1,9 @@
+kanotix-terminalserver (0.5.49) UNRELEASED; urgency=low
+
+  * NOT RELEASED YET
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Mon, 18 Sep 2006 02:18:26 +0200
+
 kanotix-terminalserver (0.5.48) unstable; urgency=low
 
   * copy and load loop and squashfs modules.
