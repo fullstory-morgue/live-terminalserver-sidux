@@ -118,6 +118,10 @@ echo "0" > /proc/sys/kernel/printk
 INSMOD=insmod
 test -x /static/insmod && INSMOD=/static/insmod
 
+# Load loop and squashfs
+[ -f /modules/loop.*o ] && $INSMOD /modules/loop.*o >/dev/null 2>&1
+[ -f /modules/squashfs.*o ] && $INSMOD /modules/squashfs.*o >/dev/null 2>&1
+
 # Mount module disk
 mountmodules(){
 TYPE="$1"; shift

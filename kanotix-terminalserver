@@ -312,6 +312,10 @@ done
 
 cp /lib/modules/$KERNEL/extra/cloop.*o /lib/modules/$KERNEL/kernel/*/*/unionfs.*o "${MINIROOT}/modules/"
 
+[ -f /lib/modules/$KERNEL/kernel/drivers/block/loop.*o ] && cp /lib/modules/$KERNEL/kernel/drivers/block/loop.*o "${MINIROOT}/modules/"
+
+[ -f /lib/modules/$KERNEL/kernel/fs/squashfs/squashfs.*o ] && cp /lib/modules/$KERNEL/kernel/fs/squashfs/squashfs.*o "${MINIROOT}/modules/"
+
 for i in $MODULES; do
 	find /lib/modules/$KERNEL/kernel/drivers/net -name "$i" -exec cp {} "${MINIROOT}/modules/net/" \;
 done
