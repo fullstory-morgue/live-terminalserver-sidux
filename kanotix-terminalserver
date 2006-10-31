@@ -6,7 +6,7 @@
 # Spanish translation by Luis Llorente <luis.llorente@hispalinux.es>
 # and Sergio Gonzalez <sergio.gonzalez@hispalinux.es>
 # (C) 2004 Modification for KANOTIX by Roger Eisenecher <roger.eisenecher@icer.ch>
-# (C) 2005 Modifications for busybox by Jörg Schirottke <master@kanotix.com>
+# (C) 2005 Modifications for busybox by JÃ¶rg Schirottke <master@kanotix.com>
 #          and Stefan Lippers-Hollmann <slh@kanotix.net>
 
 # override tool behaviour through distro-defaults
@@ -461,28 +461,28 @@ BACKTITLE="KANOTIX TERMINALSERVER SETUP"
 
 case "$LANGUAGE" in
 de|at|ch)
-TITLE_CARD="Bitte wählen Sie die Netzwerkkarte aus, die am Client-Netzwerk angeschlossen ist."
-MESSAGE_CARD="Verfügbare Netzwerkkarten:"
+TITLE_CARD="Bitte wÃ¤hlen Sie die Netzwerkkarte aus, die am Client-Netzwerk angeschlossen ist."
+MESSAGE_CARD="VerfÃ¼gbare Netzwerkkarten:"
 TITLE_RUNCONFIG="Netcardconfig aufrufen"
-MESSAGE_RUNCONFIG="Diese Netzwerkkarte wurde bisher noch nicht konfiguriert. Möchten Sie dies jetzt nachholen?"
-TITLE_IPRANGE="IP Adressraum für clients"
+MESSAGE_RUNCONFIG="Diese Netzwerkkarte wurde bisher noch nicht konfiguriert. MÃ¶chten Sie dies jetzt nachholen?"
+TITLE_IPRANGE="IP Adressraum fÃ¼r clients"
 MESSAGE_IPRANGE="
-Bitte geben Sie den gewünschten Bereich von IP-Adressen ein, der an Clients vergeben werden darf, Anfangs- und Endadresse durch ein einzelnes Leerzeichen getrennt.
+Bitte geben Sie den gewÃ¼nschten Bereich von IP-Adressen ein, der an Clients vergeben werden darf, Anfangs- und Endadresse durch ein einzelnes Leerzeichen getrennt.
 
 Beispiel:
           192.168.0.100 192.168.0.200
 
-für Adressvergabe von 192.168.0.100 bis (einschließlich) 192.168.0.200.
+fÃ¼r Adressvergabe von 192.168.0.100 bis (einschlieÃŸlich) 192.168.0.200.
 
 "
-MESSAGE_CARDS="Wählen Sie die auf den Clients zu unterstützenden Netzwerkkarten-Typen aus:"
+MESSAGE_CARDS="WÃ¤hlen Sie die auf den Clients zu unterstÃ¼tzenden Netzwerkkarten-Typen aus:"
 TITLE_CARDS="Client Hardware"
 TITLE_OPTIONS="Optionen"
-MESSAGE_OPTIONS="Diese Optionen sind verantwortlich für Performance und Sicherheit von Server und Clients. Die Webproxy-Option sollten Sie nur auswählen, wenn Ihr Rechner über mindestens 256MB Hauptspeicher verfügt."
+MESSAGE_OPTIONS="Diese Optionen sind verantwortlich fÃ¼r Performance und Sicherheit von Server und Clients. Die Webproxy-Option sollten Sie nur auswÃ¤hlen, wenn Ihr Rechner Ã¼ber mindestens 256MB Hauptspeicher verfÃ¼gt."
 TITLE_START="Server starten"
-MESSAGE_START="Der KANOTIX-Terminalserver wird nun im Hintergrund gestartet. Sie können die einzelnen Dienste (dhcpd, in.tftpd, nfsd, ...) in der Prozessliste des Systems verfolgen, und mit \"$0 stop\" oder dem entsprechenden Menü den Terminalserver ggf. wieder beenden. Über PXE netzwerk-bootfähige Rechner sollten nun von diesem Rechner booten können, und mit den notwendigen Dateien über das Netz versorgt werden. Server jetzt starten?"
+MESSAGE_START="Der KANOTIX-Terminalserver wird nun im Hintergrund gestartet. Sie kÃ¶nnen die einzelnen Dienste (dhcpd, in.tftpd, nfsd, ...) in der Prozessliste des Systems verfolgen, und mit \"$0 stop\" oder dem entsprechenden MenÃ¼ den Terminalserver ggf. wieder beenden. Ãœber PXE netzwerk-bootfÃ¤hige Rechner sollten nun von diesem Rechner booten kÃ¶nnen, und mit den notwendigen Dateien Ã¼ber das Netz versorgt werden. Server jetzt starten?"
 TITLE_APPEND="Client Boot-Optionen"
-MESSAGE_APPEND="Einige Hardware (bestimmte Grafikkarten, Monitore etc.) benötigen spezielle Bootoptionen, da sie nicht automatisch erkannt werden können. Sie können hier eine durch Leerzeichen getrennte Liste von Bootoptionen und Parametern angeben, die auf den Clients ausgeführt wird. Lassen Sie das Feld leer und wählen Sie \"OK\", falls keine speziellen Bootoptionen notwendig sind."
+MESSAGE_APPEND="Einige Hardware (bestimmte Grafikkarten, Monitore etc.) benÃ¶tigen spezielle Bootoptionen, da sie nicht automatisch erkannt werden kÃ¶nnen. Sie kÃ¶nnen hier eine durch Leerzeichen getrennte Liste von Bootoptionen und Parametern angeben, die auf den Clients ausgefÃ¼hrt wird. Lassen Sie das Feld leer und wÃ¤hlen Sie \"OK\", falls keine speziellen Bootoptionen notwendig sind."
 ITEM_SECURE="Root Zugang auf den Clients abschalten"
 ITEM_DNS="Nameserver Cache/Proxy"
 ITEM_SQUID="Transparenter WWW Cache/Proxy"
@@ -493,10 +493,10 @@ es)
 TITLE_CARD="Selecciona el dispositivo de red conectado a la red de clientes"
 MESSAGE_CARD="Dispositivos de red disponibles:"
 TITLE_RUNCONFIG="Ejecutari netcardconfig"
-MESSAGE_RUNCONFIG="Esta tarjeta de red aún no ha sido configurada. ¿Le gustaría hacerlo ahora?"
+MESSAGE_RUNCONFIG="Esta tarjeta de red aÃºn no ha sido configurada. Â¿Le gustarÃ­a hacerlo ahora?"
 TITLE_IPRANGE="Rango de direcciones IP para los clientes"
 MESSAGE_IPRANGE="
-Por favor, introduzca los rangos de direcciones IP que deberían ser accesibles por los clientes, separados por un espacio single.
+Por favor, introduzca los rangos de direcciones IP que deberÃ­an ser accesibles por los clientes, separados por un espacio single.
 
 Ejemplo:
           192.168.0.101 192.168.0.200
@@ -504,19 +504,19 @@ Ejemplo:
 para direcciones desde 192.168.0.101 hasta (inclusive) 192.168.0.200.
 
 "
-MESSAGE_CARDS="Seleccione tarjeta(s) de red para probar en las máquinas cliente:"
+MESSAGE_CARDS="Seleccione tarjeta(s) de red para probar en las mÃ¡quinas cliente:"
 TITLE_CARDS="Hardware del cliente"
 TITLE_OPTIONS="Opciones"
-MESSAGE_OPTIONS="Estas opciones determinan el rendimiento y la seguridad del servidor y los clientes. Debería seleccionar la opción webproxy sólo si su servidor tiene al menos 265MB de memoria."
+MESSAGE_OPTIONS="Estas opciones determinan el rendimiento y la seguridad del servidor y los clientes. DeberÃ­a seleccionar la opciÃ³n webproxy sÃ³lo si su servidor tiene al menos 265MB de memoria."
 TITLE_START="Arrancando el servidor"
-MESSAGE_START="El servidor KANOTIX-Terminal se arrancará ahora. Puede observar los servicios individuales (dhcpd, in.tftpd, nfsd, ...) en el listado de procesos de su sistema. Si quiere finalizar el servidor de terminales, por favor, utilice \"$0 stop\" o el correspondiente elemento del menú. Los ordenadores con una tarjeta de red arrancable PXE deberían ser capaces de arrancar remotamente desde este ordenador a partir de ahora. ¿Arrancar el servidor?"
+MESSAGE_START="El servidor KANOTIX-Terminal se arrancarÃ¡ ahora. Puede observar los servicios individuales (dhcpd, in.tftpd, nfsd, ...) en el listado de procesos de su sistema. Si quiere finalizar el servidor de terminales, por favor, utilice \"$0 stop\" o el correspondiente elemento del menÃº. Los ordenadores con una tarjeta de red arrancable PXE deberÃ­an ser capaces de arrancar remotamente desde este ordenador a partir de ahora. Â¿Arrancar el servidor?"
 TITLE_APPEND="Opciones de arranque del cliente"
-MESSAGE_APPEND="Para algún hardware (algunas tarjetas gráficas, monitores) puede ser necesario tener que especificar opciones de arranque. Aquí puede añadir una lista de opciones y parámetros separadas por espacios que serán añadidos a la línea de comandos de arranque en las máquinas cliente. Deje vacío y pulse \"OK\" si sus clientes no necesitan ninguna."
+MESSAGE_APPEND="Para algÃºn hardware (algunas tarjetas grÃ¡ficas, monitores) puede ser necesario tener que especificar opciones de arranque. AquÃ­ puede aÃ±adir una lista de opciones y parÃ¡metros separadas por espacios que serÃ¡n aÃ±adidos a la lÃ­nea de comandos de arranque en las mÃ¡quinas cliente. Deje vacÃ­o y pulse \"OK\" si sus clientes no necesitan ninguna."
 ITEM_SECURE="Desactivar acceso root en cliente(s)"
-ITEM_DNS="Caché de servidor de nombres/proxy"
-ITEM_SQUID="Proxy WWW transparente caché"
-ITEM_IPTABLES="Enmascaramiento IP + reenvío"
-ITEM_NX="Configuración del ThinClient NX"
+ITEM_DNS="CachÃ© de servidor de nombres/proxy"
+ITEM_SQUID="Proxy WWW transparente cachÃ©"
+ITEM_IPTABLES="Enmascaramiento IP + reenvÃ­o"
+ITEM_NX="ConfiguraciÃ³n del ThinClient NX"
 ;;
 *)
 TITLE_CARD="Choose network device connected to client network"
@@ -639,21 +639,21 @@ BACKTITLE="KANOTIX TERMINALSERVER"
 case "$LANGUAGE" in
 de|at|ch)
 TITLE_INTRO="Informationen zum KANOTIX-Terminalserver"
-MESSAGE_INTRO="Der KANOTIX-Terminalserver ist eine Sammlung von Skripten und Utilities, um auf einem Rechner, auf dem bereits KANOTIX läuft, Services wie DHCP, TFTP und NFS zu starten, so dass der Kernel, eine dynamisch generierte Init-Ramdisk sowie das komprimierte KANOTIX-Image über das Netzwerk exportiert werden können.
+MESSAGE_INTRO="Der KANOTIX-Terminalserver ist eine Sammlung von Skripten und Utilities, um auf einem Rechner, auf dem bereits KANOTIX lÃ¤uft, Services wie DHCP, TFTP und NFS zu starten, so dass der Kernel, eine dynamisch generierte Init-Ramdisk sowie das komprimierte KANOTIX-Image Ã¼ber das Netzwerk exportiert werden kÃ¶nnen.
 
-Um KANOTIX über das Netzwerk zu booten, benötigen die Client-Rechner eine von Linux unterstützte, PXE-bootfähige Netzwerkkarte. Die serverseitig gestarteten Skripte erlauben es, die IP-Bereiche für die Clients festzulegen und einige sicherheitsrelevante Optionen zu setzen (beispielsweise, ob ein Root-Zugang auf den Clients erlaubt sein soll oder nicht)."
-TITLE_CHOOSER="Terminalserver Menü"
-MESSAGE_CHOOSER="Bitte auswählen"
+Um KANOTIX Ã¼ber das Netzwerk zu booten, benÃ¶tigen die Client-Rechner eine von Linux unterstÃ¼tzte, PXE-bootfÃ¤hige Netzwerkkarte. Die serverseitig gestarteten Skripte erlauben es, die IP-Bereiche fÃ¼r die Clients festzulegen und einige sicherheitsrelevante Optionen zu setzen (beispielsweise, ob ein Root-Zugang auf den Clients erlaubt sein soll oder nicht)."
+TITLE_CHOOSER="Terminalserver MenÃ¼"
+MESSAGE_CHOOSER="Bitte auswÃ¤hlen"
 MESSAGE_CONFIG="Server (neu) konfigurieren und (neu) starten"
 MESSAGE_START="Server starten"
 MESSAGE_STOP="Server anhalten"
 ;;
 es)
-TITLE_INTRO="Información sobre el servidor de terminal KANOTIX"
-MESSAGE_INTRO="El servidor de terminal KANOTIX es una colección de scripts que arranca servicios como dhcp, tftp, nfs en una máquina que ya esté ejecutando KANOTIX, de manera que el Kernel, una imagen dinámica generada por initrd y la imagen-loop comprimida se comparten a través de la red.
+TITLE_INTRO="InformaciÃ³n sobre el servidor de terminal KANOTIX"
+MESSAGE_INTRO="El servidor de terminal KANOTIX es una colecciÃ³n de scripts que arranca servicios como dhcp, tftp, nfs en una mÃ¡quina que ya estÃ© ejecutando KANOTIX, de manera que el Kernel, una imagen dinÃ¡mica generada por initrd y la imagen-loop comprimida se comparten a travÃ©s de la red.
 
-Para arrancar Kanotix a través de la red, necesita una tarjeta de red soportada por linux y arrancable mediante PXE en cada máquina cliente. Los scripts de arranque en el servidor le dejan elegir el rango de direcciones IP asignadas así como algunas opciones relativas a la seguridad (por ejemplo, el permitir o no root-Shells en las máquinas cliente)."
-TITLE_CHOOSER="Menú Terminalserver"
+Para arrancar Kanotix a travÃ©s de la red, necesita una tarjeta de red soportada por linux y arrancable mediante PXE en cada mÃ¡quina cliente. Los scripts de arranque en el servidor le dejan elegir el rango de direcciones IP asignadas asÃ­ como algunas opciones relativas a la seguridad (por ejemplo, el permitir o no root-Shells en las mÃ¡quinas cliente)."
+TITLE_CHOOSER="MenÃº Terminalserver"
 MESSAGE_CHOOSER="Por favor, seleccione:"
 MESSAGE_CONFIG="(Re)configurar el servidor y (re)arrancar"
 MESSAGE_START="Arrancar el servidor"

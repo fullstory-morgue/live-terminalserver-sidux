@@ -1,8 +1,9 @@
-kanotix-terminalserver (0.5.49) UNRELEASED; urgency=low
+kanotix-terminalserver (0.5.49) unstable; urgency=low
 
-  * NOT RELEASED YET
+  * switch to utf-8.
+  * fix lintian errors.
 
- -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Mon, 18 Sep 2006 02:18:26 +0200
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Wed,  1 Nov 2006 00:33:30 +0100
 
 kanotix-terminalserver (0.5.48) unstable; urgency=low
 
