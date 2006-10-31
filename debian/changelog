@@ -1,3 +1,9 @@
+kanotix-terminalserver (0.5.50) UNRELEASED; urgency=low
+
+  * NOT RELEASED YET
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Wed,  1 Nov 2006 00:35:00 +0100
+
 kanotix-terminalserver (0.5.49) unstable; urgency=low
 
   * switch to utf-8.
