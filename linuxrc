@@ -18,15 +18,17 @@ trap "" 1 2 3 15
 
 # Misc functions
 
-mountit(){
-# Usage: mountit src dst "options"
-# Uses builtin mount of ash.knoppix
-# Builin filesystems
-BUILTIN_FS="iso9660 ext2 vfat"
-for fs in $BUILTIN_FS; do
-test -b $1 && mount -t $fs $3 $1 $2 >/dev/null 2>&1 && return 0
-done
-return 1
+mountit() {
+	# Usage: mountit src dst "options"
+	# Uses builtin mount of ash.knoppix
+	# Builin filesystems
+	BUILTIN_FS="iso9660 ext2 vfat"
+
+	for fs in $BUILTIN_FS; do
+		test -b $1 && mount -t $fs $3 $1 $2 >/dev/null 2>&1 && return 0
+	done
+	
+	return 1
 }
 
 FOUND_SCSI=""
@@ -95,13 +97,30 @@ mount -t sysfs /sys /sys >/dev/null 2>&1
 
 # Check if we are in interactive startup mode
 cmdline="$(cat /proc/cmdline 2>/dev/null)"
-case "$cmdline" in *BOOT_IMAGE=expert\ *) INTERACTIVE="yes"; :>/interactive; ;; esac
+case "$cmdline" in 
+	*BOOT_IMAGE=expert\ *)
+		INTERACTIVE="yes"
+		:>/interactive
+		;;
+esac
+
 # Does the user want to skip scsi detection?
 NOSCSI=""
-case "$cmdline" in *noscsi*) NOSCSI="yes"; ;; esac
+case "$cmdline" in 
+	*noscsi*)
+		NOSCSI="yes"
+		;;
+esac
 
 # Split cmdline, find NFSDIR variable
-for i in $cmdline; do case "$i" in ip=*|IP=*|nm=*|NM=*|gw=*|GW=*|nfsdir=*|NFSDIR=*) eval $i;; esac; done
+for i in $cmdline; do 
+	case "$i" in
+		ip=*|IP=*|nm=*|NM=*|gw=*|GW=*|nfsdir=*|NFSDIR=*)
+			eval $i
+			;;
+	esac
+done
+
 [ -n "$ip" ] && IP="$ip"
 [ -n "$nm" ] && NM="$nm"
 [ -n "$gw" ] && GW="$gw"
@@ -109,7 +128,11 @@ for i in $cmdline; do case "$i" in ip=*|IP=*|nm=*|NM=*|gw=*|GW=*|nfsdir=*|NFSDIR
 
 # Check for "secure" option
 SECURE=""
-case "$cmdline" in *secure*) SECURE="yes";; esac
+case "$cmdline" in
+	*secure*)
+		SECURE="yes"
+		;;
+esac
 
 # Disable kernel messages while probing modules in autodetect mode
 echo "0" > /proc/sys/kernel/printk
@@ -119,80 +142,108 @@ INSMOD=insmod
 test -x /static/insmod && INSMOD=/static/insmod
 
 # Load loop and squashfs
-[ -f /modules/loop.*o ] && $INSMOD /modules/loop.*o >/dev/null 2>&1
+[ -f /modules/loop.*o ] &&     $INSMOD /modules/loop.*o >/dev/null 2>&1
 [ -f /modules/squashfs.*o ] && $INSMOD /modules/squashfs.*o >/dev/null 2>&1
 
 # Mount module disk
-mountmodules(){
-TYPE="$1"; shift
-echo -n "${CRE}${CYAN}Please insert ${TYPE} modules disk and hit Return. ${NORMAL}"
-read a
-echo -n "${CRE}${BLUE}Mounting ${TYPE} modules disk... ${NORMAL}"
-# We always mount over /modules/scsi (because it's there ;-)
-if mountit /dev/fd0 /modules/scsi "-o ro"; then
-echo "${GREEN}OK.${NORMAL}"
-return 0
-fi
-echo "${RED}NOT FOUND.${NORMAL}"
-return 1
+mountmodules() {
+	TYPE="$1"
+	shift
+
+	echo -n "${CRE}${CYAN}Please insert ${TYPE} modules disk and hit Return. ${NORMAL}"
+	read a
+
+	echo -n "${CRE}${BLUE}Mounting ${TYPE} modules disk... ${NORMAL}"
+
+	# We always mount over /modules/scsi (because it's there ;-)
+	if mountit /dev/fd0 /modules/scsi "-o ro"; then
+		echo "${GREEN}OK.${NORMAL}"
+		return 0
+	fi
+	
+	echo "${RED}NOT FOUND.${NORMAL}"
+	return 1
 }
 
 # Unmount module disk
-umountmodules(){
-TYPE="$1"; shift
-echo -n "${CRE}${BLUE}Unmounting ${TYPE} modules disk... ${NORMAL}"
-umount /modules/scsi 2>/dev/null
-echo "${GREEN}DONE.${NORMAL}"
+umountmodules() {
+	TYPE="$1"
+	shift
+
+	echo -n "${CRE}${BLUE}Unmounting ${TYPE} modules disk... ${NORMAL}"
+	umount /modules/scsi 2>/dev/null
+	echo "${GREEN}DONE.${NORMAL}"
 }
 
 # Ask user for modules
-askmodules(){
-TYPE="$1"; shift
-echo "${BLUE}${TYPE} modules available:${WHITE}"
-c=""; for m in "$@"; do
-if test -f "/modules/scsi/$m"; then
-test -z "$c"  && { echo -n "	$m"; c="1"; } || { echo "		$m"; c=""; }
-fi
-done
-[ -n "$c" ] && echo
-echo "${CYAN}Load ${TYPE} Modules?${NORMAL}"
-echo "${CYAN}[Enter full filename(s) (space-separated), Return for autoprobe, ${WHITE}n${CYAN} for none] ${NORMAL}"
-echo -n "${CYAN}insmod module(s)> ${NORMAL}"
-read MODULES
-case "$MODULES" in n|N) MODULES=""; ;; y|"")  MODULES="$*"; ;; esac
+askmodules() {
+	TYPE="$1"
+	shift
+
+	echo "${BLUE}${TYPE} modules available:${WHITE}"
+	
+	c=""
+	for m in "$@"; do
+		if test -f "/modules/scsi/$m"; then
+			test -z "$c"  && { echo -n "	$m"; c="1"; } || { echo "		$m"; c=""; }
+		fi
+	done
+
+	[ -n "$c" ] && echo
+	echo "${CYAN}Load ${TYPE} Modules?${NORMAL}"
+	echo "${CYAN}[Enter full filename(s) (space-separated), Return for autoprobe, ${WHITE}n${CYAN} for none] ${NORMAL}"
+	echo -n "${CYAN}insmod module(s)> ${NORMAL}"
+	read MODULES
+
+	case "$MODULES" in
+		n|N)
+			MODULES=""
+			;;
+		y|"")
+			MODULES="$*"
+			;;
+	esac
 }
 
 # Try to load the given modules (full path or current directory)
-loadmodules(){
-TYPE="$1"; shift
-test -n "$INTERACTIVE" && echo "6" > /proc/sys/kernel/printk
-for i in "$@"; do
-echo -n "${CRE}${BLUE}Probing ${TYPE}... ${MAGENTA}$i${NORMAL}"
-if test -f /modules/scsi/$i && $INSMOD /modules/scsi/$i >/dev/null 2>&1
-then
-echo "${CRE} ${GREEN}Found ${TYPE} device(s) handled by ${MAGENTA}$i${GREEN}.${NORMAL}"
-case "$TYPE" in scsi|SCSI) FOUND_SCSI="yes"; ;; esac
-fi
-done
-test -n "$INTERACTIVE" && echo "0" > /proc/sys/kernel/printk
-echo -n "${CRE}"
+loadmodules() {
+	TYPE="$1"
+	shift
+
+	test -n "$INTERACTIVE" && echo "6" > /proc/sys/kernel/printk
+	
+	for i in "$@"; do
+		echo -n "${CRE}${BLUE}Probing ${TYPE}... ${MAGENTA}$i${NORMAL}"
+		
+		if test -f /modules/scsi/$i && $INSMOD /modules/scsi/$i >/dev/null 2>&1; then
+			echo "${CRE} ${GREEN}Found ${TYPE} device(s) handled by ${MAGENTA}$i${GREEN}.${NORMAL}"
+			case "$TYPE" in scsi|SCSI) FOUND_SCSI="yes"; ;; esac
+		fi
+	done
+	
+	test -n "$INTERACTIVE" && echo "0" > /proc/sys/kernel/printk
+	echo -n "${CRE}"
 }
 
-dropshell(){
-echo "${CRE}${RED}Can't NFSmount KANOTIX filesystem, sorry.${NORMAL}"
-echo "${RED}Dropping you to a (very limited) shell.${NORMAL}"
-echo "${RED}Press reset button to quit.${NORMAL}"
-echo ""
-echo "Additional builtin commands avaliable:"
-help
-echo ""
-PS1="${FLL__LIVE_USER}# "
-export PS1
-echo "6" > /proc/sys/kernel/printk
-# Allow signals
-trap 1 2 3 15
-echo "Modules loaded:" ; cat /proc/modules
-exec /static/ash
+dropshell() {
+	echo "${CRE}${RED}Can't NFSmount KANOTIX filesystem, sorry.${NORMAL}"
+	echo "${RED}Dropping you to a (very limited) shell.${NORMAL}"
+	echo "${RED}Press reset button to quit.${NORMAL}"
+	echo ""
+	echo "Additional builtin commands avaliable:"
+
+	help
+	echo ""
+
+	PS1="${FLL__LIVE_USER}# "
+	export PS1
+	echo "6" > /proc/sys/kernel/printk
+	
+	# Allow signals
+	trap 1 2 3 15
+	
+	echo "Modules loaded:" ; cat /proc/modules
+	exec /static/ash
 }
 
 # Load nfs modules
@@ -201,18 +252,25 @@ for i in $NFSMODULES; do $INSMOD /modules/net/$i 2>/dev/null; done
 
 # Check for misc modules in expert mode
 if test -n "$INTERACTIVE"; then
-another=""; answer=""
-while test "$answer" != "n" -a "$answer" != "N"; do
-echo -n "${CYAN}Do you want to load additional modules from$another floppy disk? [${WHITE}Y${CYAN}/n] ${NORMAL}"
-another=" another"
-read answer
-case "$answer" in n*|N*) break; ;; esac
-if mountmodules new; then
-askmodules new $(cd /modules/scsi; echo *.*o)
-test -n "$MODULES" && loadmodules new $MODULES
-umountmodules current
-fi
-done
+	another=""
+	answer=""
+	while test "$answer" != "n" -a "$answer" != "N"; do
+		echo -n "${CYAN}Do you want to load additional modules from$another floppy disk? [${WHITE}Y${CYAN}/n] ${NORMAL}"
+		another=" another"
+		read answer
+		
+		case "$answer" in
+			n*|N*)
+				break
+				;;
+		esac
+
+		if mountmodules new; then
+			askmodules new $(cd /modules/scsi; echo *.*o)
+			test -n "$MODULES" && loadmodules new $MODULES
+			umountmodules current
+		fi
+	done
 fi
 # All interactively requested modules should be loaded now.
 
@@ -224,13 +282,22 @@ echo "0" > /proc/sys/kernel/printk
 
 FOUND_NETWORK=""
 echo "Loading network device module(s)"
+
 for i in $(cd /modules/net; echo *.*o); do
-case "$NFSMODULES" in
-*$i*) ;;
-*) $INSMOD /modules/net/$i >/dev/null 2>&1 && \
-case "$i" in 00*) ;; *) echo "${CRE} ${GREEN}Found network device(s) handled by ${MAGENTA}$i${GREEN}.${NORMAL}" && FOUND_NETWORK="$i" ;; esac
-;;
-esac
+	case "$NFSMODULES" in
+		*$i*)
+			;;
+		*)
+			$INSMOD /modules/net/$i >/dev/null 2>&1 && \
+			case "$i" in
+				00*)
+					;;
+				*)
+					echo "${CRE} ${GREEN}Found network device(s) handled by ${MAGENTA}$i${GREEN}.${NORMAL}" && FOUND_NETWORK="$i"
+					;;
+			esac
+		;;
+	esac
 done
 
 # Enable kernel messages again
@@ -241,10 +308,10 @@ echo "6" > /proc/sys/kernel/printk
 
 DHCP=""
 for i in 1 2 3; do
-echo -n "${CRE}${BLUE}DHCP Broadcasting for IP address ($i)... ${NORMAL}"
-pump -v && DHCP="true"
-[ -n "$DHCP" ] && break
-echo "${RED}No answer from network.${NORMAL}"
+	echo -n "${CRE}${BLUE}DHCP Broadcasting for IP address ($i)... ${NORMAL}"
+	pump -v && DHCP="true"
+	[ -n "$DHCP" ] && break
+	echo "${RED}No answer from network.${NORMAL}"
 done
 [ -n "$DHCP" ] && echo "${GREEN}OK.${NORMAL}" || dropshell
 
@@ -261,11 +328,12 @@ SECUREOPTIONS=""
 
 # if we have an NFSDIR, try mounting it
 if [ -n "$NFSDIR" ]; then
-    echo -n "${CRE}${BLUE}Trying to mount CD on" \
-	"${MAGENTA}$NFSDIR${BLUE}...${NORMAL}"
-    /static/mount -t nfs -o \
-	ro,rsize=8192,wsize=8192,hard,intr$SECUREOPTIONS \
-        "${NFSDIR}" /cdrom > /dev/null 2>&1  && MOUNTED="yes"
+	echo -n "${CRE}${BLUE}Trying to mount CD on" \
+		"${MAGENTA}$NFSDIR${BLUE}...${NORMAL}"
+
+	/static/mount -t nfs -o \
+		ro,rsize=8192,wsize=8192,hard,intr$SECUREOPTIONS \
+		"${NFSDIR}" /cdrom > /dev/null 2>&1  && MOUNTED="yes"
 
 	# unsuccessful? Blank out NFSDIR and see if pump does better
 	[ -z "$MOUNTED" ] && echo "${RED}Failed.${NORMAL}" && NFSDIR=
@@ -273,61 +341,71 @@ fi
 
 # no NFSDIR? ask pump for the second server
 if [ -z "$NFSDIR" ]; then
- PUMP="$(pump -s)"
- while read next server nfsroot; do
- case "$next $server" in [Nn]ext\ [Ss]erver) NFSROOT="$nfsroot"; break; ;; esac
- done <<EOT
-$PUMP
+	PUMP="$(pump -s)"
+
+	while read next server nfsroot; do
+		case "$next $server" in 
+			[Nn]ext\ [Ss]erver)
+				NFSROOT="$nfsroot"
+				break
+				;;
+		esac
+	done <<EOT
+	$PUMP
 EOT
-
- # if that doesn't exist, use the dhcp server
- if [ -z "$NFSROOT" -o "$NFSROOT" = "0.0.0.0" ];then
- while read next server nfsroot; do
- case "$next $server" in [Bb]oot\ [Ss]erver) NFSROOT="$nfsroot"; break; ;; esac
- done <<EOT
-$PUMP
+	# if that doesn't exist, use the dhcp server
+	if [ -z "$NFSROOT" -o "$NFSROOT" = "0.0.0.0" ];then
+		while read next server nfsroot; do
+			case "$next $server" in
+				[Bb]oot\ [Ss]erver)
+					NFSROOT="$nfsroot"
+						break
+					;;
+			esac
+		done <<EOT
+		$PUMP
 EOT
- fi
+	fi
 
- # still nothing? try the default
- [ -z "$NFSROOT" ] && NFSROOT=192.168.0.1
+	# still nothing? try the default
+	[ -z "$NFSROOT" ] && NFSROOT=192.168.0.1
 
- # try mounting it, first with "/knoppix"
- echo -n "${CRE}${BLUE}Trying to mount CD on ${MAGENTA}$NFSROOT${BLUE}...${NORMAL}"
- /static/mount -t nfs -o ro,rsize=8192,wsize=8192,hard,intr$SECUREOPTIONS \
-  "${NFSROOT}:/${FLL_LIVE_USER}" /cdrom > /dev/null 2>&1  && NFSDIR="${NFSROOT}:/${FLL_LIVE_USER}"
+	# try mounting it, first with "/knoppix"
+	echo -n "${CRE}${BLUE}Trying to mount CD on ${MAGENTA}$NFSROOT${BLUE}...${NORMAL}"
+	/static/mount -t nfs -o ro,rsize=8192,wsize=8192,hard,intr$SECUREOPTIONS \
+		"${NFSROOT}:/${FLL_LIVE_USER}" /cdrom > /dev/null 2>&1  && NFSDIR="${NFSROOT}:/${FLL_LIVE_USER}"
 
-# then with "/cdrom"
- [ -z "$NFSDIR" ] && /static/mount -t nfs -o \
-  ro,rsize=8192,wsize=8192,hard,intr$SECUREOPTIONS \
-  "${NFSROOT}:/cdrom" /cdrom > /dev/null 2>&1  && NFSDIR="${NFSROOT}:/cdrom"
+	# then with "/cdrom"
+	[ -z "$NFSDIR" ] && /static/mount -t nfs -o \
+				ro,rsize=8192,wsize=8192,hard,intr$SECUREOPTIONS \
+				"${NFSROOT}:/cdrom" /cdrom > /dev/null 2>&1  && NFSDIR="${NFSROOT}:/cdrom"
 
- [ -n "$NFSDIR" ] && MOUNTED="yes"
+	[ -n "$NFSDIR" ] && MOUNTED="yes"
 fi
 
 # STILL nothing? ask the user
 [ -z "$MOUNTED" ] && {
-    for i in 2 1 0; do
-	echo "${RED}Failed.${NORMAL}"
-	echo -n "${CYAN}Please enter NFS directory path" \
-	    "(aka \"192.168.0.1:/cdrom\"): ${NORMAL}"
-	read NFSDIR
-	/static/mount -t nfs -o ro,rsize=8192,wsize=8192,hard,intr$SECUREOPTIONS \
-	    "$NFSDIR" /cdrom > /dev/null 2>&1  && MOUNTED="true"
-	[ -n "$MOUNTED" ] && break
-    done
+	for i in 2 1 0; do
+		echo "${RED}Failed.${NORMAL}"
+		echo -n	"${CYAN}Please enter NFS directory path" \
+			"(aka \"192.168.0.1:/cdrom\"): ${NORMAL}"
+		read NFSDIR
+
+		/static/mount -t nfs -o ro,rsize=8192,wsize=8192,hard,intr$SECUREOPTIONS \
+			"$NFSDIR" /cdrom > /dev/null 2>&1  && MOUNTED="true"
+		[ -n "$MOUNTED" ] && break
+	done
 }
 
 [ -n "$MOUNTED" ] && echo "${GREEN}OK.${NORMAL}"
 [ -z "$MOUNTED" ] && dropshell
 
 FOUND_KNOPPIX=""
-if test -f /cdrom/${FLL_IMAGE_LOCATION}
-then
-echo -n "${CRE} ${GREEN}Accessing ${FLL_DISTRO_NAME} CDROM image at ${MAGENTA}$NFSDIR${GREEN}...${NORMAL}"
-FOUND_KNOPPIX="true"
+if test -f /cdrom/${FLL_IMAGE_LOCATION}; then
+	echo -n "${CRE} ${GREEN}Accessing ${FLL_DISTRO_NAME} CDROM image at ${MAGENTA}$NFSDIR${GREEN}...${NORMAL}"
+	FOUND_KNOPPIX="true"
 else
-dropshell
+	dropshell
 fi
 
 # Harddisk-installed script part version has been removed
@@ -341,171 +419,193 @@ losetup /dev/loop0 /cdrom/${FLL_IMAGE_LOCATION}
 mount -t squashfs -o ro$SECUREOPTIONS /dev/loop0 ${FLL_MOUNTPOINT} 2>/dev/null || FOUND_KNOPPIX=""
 # fallback to cloop
 if [ -z "$FOUND_KNOPPIX" ]; then
-losetup -d /dev/loop0
-$INSMOD /modules/cloop.*o file=/cdrom/${FLL_IMAGE_LOCATION}
-mountit /dev/cloop ${FLL_MOUNTPOINT} "-o ro$SECUREOPTIONS" || FOUND_KNOPPIX=""
+	losetup -d /dev/loop0
+	$INSMOD /modules/cloop.*o file=/cdrom/${FLL_IMAGE_LOCATION}
+	mountit /dev/cloop ${FLL_MOUNTPOINT} "-o ro$SECUREOPTIONS" || FOUND_KNOPPIX=""
 fi
 
 # Final test if everything succeeded.
-if test -n "$FOUND_KNOPPIX"
-then
-# copy library cache
-cat ${FLL_MOUNTPOINT}/etc/ld.so.cache > /etc/ld.so.cache
-# Difficult: move library directory
-${FLL_MOUNTPOINT}/lib/ld-linux.so.2 --library-path ${FLL_MOUNTPOINT}/lib ${FLL_MOUNTPOINT}/bin/mv -f /lib /lib.old && ${FLL_MOUNTPOINT}/lib/ld-linux.so.2 --library-path ${FLL_MOUNTPOINT}/lib ${FLL_MOUNTPOINT}/bin/ln -s ${FLL_MOUNTPOINT}/lib /lib
+if test -n "$FOUND_KNOPPIX"; then
+	# copy library cache
+	cat ${FLL_MOUNTPOINT}/etc/ld.so.cache > /etc/ld.so.cache
+	# Difficult: move library directory
+	${FLL_MOUNTPOINT}/lib/ld-linux.so.2 --library-path ${FLL_MOUNTPOINT}/lib ${FLL_MOUNTPOINT}/bin/mv -f /lib /lib.old && ${FLL_MOUNTPOINT}/lib/ld-linux.so.2 --library-path ${FLL_MOUNTPOINT}/lib ${FLL_MOUNTPOINT}/bin/ln -s ${FLL_MOUNTPOINT}/lib /lib
 
-echo ""
+	echo ""
 
-# Enable kernel messages
-echo "6" > /proc/sys/kernel/printk
+	# Enable kernel messages
+	echo "6" > /proc/sys/kernel/printk
 
-# Set paths
-echo -n "${CRE}${BLUE}Setting paths...${NORMAL}"
-PATH="/sbin:/bin:/usr/sbin:/usr/bin:/usr/X11R6/bin:."
-export PATH
+	# Set paths
+	echo -n "${CRE}${BLUE}Setting paths...${NORMAL}"
+	PATH="/sbin:/bin:/usr/sbin:/usr/bin:."
+	export PATH
 
-# Debian weirdness
-/bin/cp -a ${FLL_MOUNTPOINT}/etc/alternatives /etc/ 2>/dev/null
+	# Debian weirdness
+	/bin/cp -a ${FLL_MOUNTPOINT}/etc/alternatives /etc/ 2>/dev/null
 
-# From here, we should have all essential commands available.
-hash -r
+	# From here, we should have all essential commands available.
+	hash -r
 
-# Clean up /
-rm -rf /modules /static /*.old
+	# Clean up /
+	rm -rf /modules /static /*.old
 
-# New in Kernel 2.4.x: tmpfs with variable ramdisk size.
-# We check for available memory anyways and limit the ramdisks
-# to a reasonable size.
-FOUNDMEM="$(awk '/MemTotal/{print $2}' /proc/meminfo)"
-TOTALMEM="$(awk 'BEGIN{m=0};/MemFree|Cached/{m+=$2};END{print m}' /proc/meminfo)"
+	# New in Kernel 2.4.x: tmpfs with variable ramdisk size.
+	# We check for available memory anyways and limit the ramdisks
+	# to a reasonable size.
+	FOUNDMEM="$(awk '/MemTotal/{print $2}' /proc/meminfo)"
+	TOTALMEM="$(awk 'BEGIN{m=0};/MemFree|Cached/{m+=$2};END{print m}' /proc/meminfo)"
  
-# Be verbose
-echo "${CRE}${BLUE}Total memory found: ${YELLOW}${FOUNDMEM}${BLUE} kB${NORMAL}"
+	# Be verbose
+	echo "${CRE}${BLUE}Total memory found: ${YELLOW}${FOUNDMEM}${BLUE} kB${NORMAL}"
 
-# Now we need to use a little intuition for finding a ramdisk size
-# that keeps us from running out of space, but still doesn't crash the
-# machine due to lack of Ram
+	# Now we need to use a little intuition for finding a ramdisk size
+	# that keeps us from running out of space, but still doesn't crash the
+	# machine due to lack of Ram
 
-# Minimum size of additional ram partitions
-MINSIZE=20000
-# At least this much memory minus 30% should remain when home and var are full.
-MINLEFT=16000
-# Maximum ramdisk size
-MAXSIZE="$(expr $TOTALMEM - $MINLEFT)"
-# Default ramdisk size for ramdisk
-RAMSIZE="$(expr $TOTALMEM / 5)"
+	# Minimum size of additional ram partitions
+	MINSIZE=20000
+	
+	# At least this much memory minus 30% should remain when home and var are full.
+	MINLEFT=16000
+	
+	# Maximum ramdisk size
+	MAXSIZE="$(expr $TOTALMEM - $MINLEFT)"
+	
+	# Default ramdisk size for ramdisk
+	RAMSIZE="$(expr $TOTALMEM / 5)"
 
-# Check for sufficient memory to mount extra ramdisk for /home + /var
-if test -n "$TOTALMEM" -a "$TOTALMEM" -gt "$MINLEFT"; then
-test -z "$RAMSIZE" && RAMSIZE=1000000
-mkdir -p /ramdisk
-# tmpfs/varsize version, can use swap
-RAMSIZE=$(expr $RAMSIZE \* 4)
-echo -n "${CRE}${BLUE}Creating ${YELLOW}/ramdisk${BLUE} (dynamic size=${RAMSIZE}k) on ${MAGENTA}/dev/shm${BLUE}...${NORMAL}"
-# We need /bin/mount here for the -o size= option
-mv /var /var.old
-/bin/mount -t tmpfs -o "size=${RAMSIZE}k" /dev/shm /ramdisk && mkdir -p /ramdisk/home /ramdisk/var && ln -s /ramdisk/home /ramdisk/var /
-echo "${BLUE}Done.${NORMAL}"
+	# Check for sufficient memory to mount extra ramdisk for /home + /var
+	if test -n "$TOTALMEM" -a "$TOTALMEM" -gt "$MINLEFT"; then
+		test -z "$RAMSIZE" && RAMSIZE=1000000
+		mkdir -p /ramdisk
+		
+		# tmpfs/varsize version, can use swap
+		RAMSIZE=$(expr $RAMSIZE \* 4)
+		echo -n "${CRE}${BLUE}Creating ${YELLOW}/ramdisk${BLUE} (dynamic size=${RAMSIZE}k) on ${MAGENTA}/dev/shm${BLUE}...${NORMAL}"
+
+		# We need /bin/mount here for the -o size= option
+		mv /var /var.old
+		/bin/mount -t tmpfs -o "size=${RAMSIZE}k" /dev/shm /ramdisk && mkdir -p /ramdisk/home /ramdisk/var && ln -s /ramdisk/home /ramdisk/var /
+		echo "${BLUE}Done.${NORMAL}"
+	else
+		mkdir -p /home /var
+	fi
+
+	# Create common WRITABLE (empty) dirs
+	echo -n "${CRE}${BLUE}Creating directories and symlinks on ramdisk...${NORMAL}"
+	mkdir -p /var/run /var/backups /var/cache/apache /var/local /var/lock/news \
+	         /var/nis /var/preserve /var/state/misc /var/tmp /var/lib \
+		 /var/spool/cups/tmp /var/lib/nessus \
+	         /media/cdrom0 /media/floppy0 /mnt/hd /mnt/test \
+	         /home/${FLL_LIVE_USER} /home/root /etc/sysconfig /etc/X11 /etc/cups
+
+	chown ${FLL_LIVE_USER}:${FLL_LIVE_USER} /home/${FLL_LIVE_USER}
+	
+	# Create empty utmp and wtmp
+	:> /var/run/utmp
+	:> /var/run/wtmp
+
+	# CUPS wants writable files. :-/
+	cp -a ${FLL_MOUNTPOINT}/etc/cups/*.conf /etc/cups/ 2>/dev/null
+
+	# All files in here should be size zero after Knoppix.clean was run
+	cp -a	${FLL_MOUNTPOINT}/var/local ${FLL_MOUNTPOINT}/var/games ${FLL_MOUNTPOINT}/var/log \
+		${FLL_MOUNTPOINT}/var/spool /var/ 2>/dev/null
+	cp -a	${FLL_MOUNTPOINT}/var/lib/games ${FLL_MOUNTPOINT}/var/lib/wine \
+		${FLL_MOUNTPOINT}/var/lib/nfs ${FLL_MOUNTPOINT}/var/lib/xkb ${FLL_MOUNTPOINT}/var/lib/isdn \
+		${FLL_MOUNTPOINT}/var/lib/kdm ${FLL_MOUNTPOINT}/var/lib/pcmcia /var/lib/ 2>/dev/null
+
+	# Problematic directories in /var/lib (lots and lots of inodes)
+	ln -s	${FLL_MOUNTPOINT}/var/lib/dpkg ${FLL_MOUNTPOINT}/var/lib/apt ${FLL_MOUNTPOINT}/var/lib/doc-base \
+		${FLL_MOUNTPOINT}/var/lib/gnome ${FLL_MOUNTPOINT}/var/lib/kde \
+		${FLL_MOUNTPOINT}/var/lib/scrollkeeper ${FLL_MOUNTPOINT}/var/lib/texmf \
+		/var/lib/ 2>/dev/null
+
+	# Debian-apt
+	ln -s ${FLL_MOUNTPOINT}/var/cache/apt /var/cache/ 2>/dev/null
+	ln -s ${FLL_MOUNTPOINT}/etc/skel ${FLL_MOUNTPOINT}/etc/nessus /etc/ 2>/dev/null
+	ln -s ${FLL_MOUNTPOINT}/dev/* /dev/ 2>/dev/null
+
+	# Index files can be HUGE, so better replace cache/man tree by links later
+	# cp -a /KNOPPIX/var/cache/man /var/cache/ 2>/dev/null
+	ln -s ${FLL_MOUNTPOINT}/var/lib/nessus/plugins /var/lib/nessus/ 2>/dev/null
+
+	# Create links from CDROM for UNWRITABLE (remaining) files
+	cp -aus ${FLL_MOUNTPOINT}/var/* /var/ 2>/dev/null
+	cp -aus ${FLL_MOUNTPOINT}/etc/* /etc/ 2>/dev/null
+
+	# Make SURE that these are files, not links!
+	rm -rf	/etc/passwd /etc/shadow /etc/group \
+		/etc/ppp /etc/isdn /etc/ssh /etc/ioctl.save \
+		/etc/inittab /etc/network /etc/sudoers \
+		/etc/init /etc/localtime /etc/dhcpc /etc/pnm2ppa.conf 2>/dev/null
+	cp -a	${FLL_MOUNTPOINT}/etc/passwd ${FLL_MOUNTPOINT}/etc/shadow ${FLL_MOUNTPOINT}/etc/group \
+		${FLL_MOUNTPOINT}/etc/ppp ${FLL_MOUNTPOINT}/etc/isdn ${FLL_MOUNTPOINT}/etc/ssh \
+		${FLL_MOUNTPOINT}/etc/inittab ${FLL_MOUNTPOINT}/etc/network ${FLL_MOUNTPOINT}/etc/sudoers \
+		${FLL_MOUNTPOINT}/sbin/init ${FLL_MOUNTPOINT}/etc/dhcpc /etc/ 2>/dev/null
+
+	if [ -n "$SECURE" -a -f /etc/inittab.secure ]; then
+		rm -f /etc/inittab
+		mv -f /etc/inittab.secure /etc/inittab
+	fi
+
+	# Extremely important, init crashes on shutdown if this is only a link
+	:> /etc/ioctl.save
+	:> /etc/pnm2ppa.conf
+
+	# Diet libc bug workaround
+	cp -f ${FLL_MOUNTPOINT}/etc/localtime /etc/localtime
+	echo "${BLUE}Done.${NORMAL}"
+
+	# Must exist for samba to work
+	[ -d /var/lib/samba ] && :> /var/lib/samba/unexpected.tdb
+
+	# Kernel 2.6
+	chmod 1777 /var/tmp
+
+	# Now tell kernel where the real modprobe lives
+	echo "/sbin/modprobe" > /proc/sys/kernel/modprobe
+
+	case "$cmdline" in
+		*atapicd*|*idecd*)
+			# Use ide-cd for ATAPI-only CD-Rom(s)
+			/sbin/modprobe ide-cd >/dev/null 2>&1
+			;;
+		*)
+			# Check for IDE-SCSI capable CD-Rom(s) first
+			/sbin/modprobe ide-scsi >/dev/null 2>&1
+			;;
+	esac
+
+	# Change root device from /dev/fd0 to /dev/ram0
+	echo "0x100" > /proc/sys/kernel/real-root-dev
+
+	# Give control to the init process.
+	echo "${CRE}${BLUE}Starting init process.${NORMAL}"
+	rm -f /linuxrc
+	
+	exit 0
 else
-mkdir -p /home /var
+	echo "${CRE}${RED}Can't find KANOTIX filesystem, sorry.${NORMAL}"
+	echo "${RED}Dropping you to a (very limited) shell.${NORMAL}"
+	echo "${RED}Press reset button to quit.${NORMAL}"
+	echo ""
+	echo "Additional builtin commands avaliable:"
+	help
+	echo ""
+
+	PS1="${FLL_LIVE_USER}# "
+	export PS1
+
+	echo "6" > /proc/sys/kernel/printk
+	
+	# Allow signals
+	trap 1 2 3 15
+
+	echo "Modules loaded:"
+	cat /proc/modules
+
+	exec /static/sh
 fi
 
-echo -n "${CRE}${BLUE}Creating directories and symlinks on ramdisk...${NORMAL}"
-# Create common WRITABLE (empty) dirs
-mkdir -p /var/run /var/backups /var/cache/apache /var/local /var/lock/news \
-         /var/nis /var/preserve /var/state/misc /var/tmp /var/lib \
-	 /var/spool/cups/tmp /var/lib/nessus \
-         /media/cdrom0 /media/floppy0 /mnt/hd /mnt/test \
-         /home/${FLL_LIVE_USER} /home/root /etc/sysconfig /etc/X11 /etc/cups
-chown ${FLL_LIVE_USER}:${FLL_LIVE_USER} /home/${FLL_LIVE_USER}
-# Create empty utmp and wtmp
-:> /var/run/utmp
-:> /var/run/wtmp
-# CUPS wants writable files. :-/
-cp -a ${FLL_MOUNTPOINT}/etc/cups/*.conf /etc/cups/ 2>/dev/null
-# All files in here should be size zero after Knoppix.clean was run
-cp -a ${FLL_MOUNTPOINT}/var/local ${FLL_MOUNTPOINT}/var/games ${FLL_MOUNTPOINT}/var/log \
-      ${FLL_MOUNTPOINT}/var/spool /var/ 2>/dev/null
-cp -a ${FLL_MOUNTPOINT}/var/lib/games ${FLL_MOUNTPOINT}/var/lib/wine \
-      ${FLL_MOUNTPOINT}/var/lib/nfs ${FLL_MOUNTPOINT}/var/lib/xkb ${FLL_MOUNTPOINT}/var/lib/isdn \
-      ${FLL_MOUNTPOINT}/var/lib/kdm ${FLL_MOUNTPOINT}/var/lib/pcmcia \
-      /var/lib/ 2>/dev/null
-# Problematic directories in /var/lib (lots and lots of inodes)
-ln -s ${FLL_MOUNTPOINT}/var/lib/dpkg ${FLL_MOUNTPOINT}/var/lib/apt ${FLL_MOUNTPOINT}/var/lib/doc-base \
-      ${FLL_MOUNTPOINT}/var/lib/gnome ${FLL_MOUNTPOINT}/var/lib/kde \
-      ${FLL_MOUNTPOINT}/var/lib/scrollkeeper ${FLL_MOUNTPOINT}/var/lib/texmf \
-      /var/lib/ 2>/dev/null
-# Debian-apt
-ln -s ${FLL_MOUNTPOINT}/var/cache/apt /var/cache/ 2>/dev/null
-ln -s ${FLL_MOUNTPOINT}/etc/skel ${FLL_MOUNTPOINT}/etc/nessus \
-      /etc/ 2>/dev/null
-ln -s ${FLL_MOUNTPOINT}/dev/* /dev/ 2>/dev/null
-# Index files can be HUGE, so better replace cache/man tree by links later
-# cp -a /KNOPPIX/var/cache/man /var/cache/ 2>/dev/null
-ln -s ${FLL_MOUNTPOINT}/var/lib/nessus/plugins /var/lib/nessus/ 2>/dev/null
-# Create links from CDROM for UNWRITABLE (remaining) files
-cp -aus ${FLL_MOUNTPOINT}/var/* /var/ 2>/dev/null
-cp -aus ${FLL_MOUNTPOINT}/etc/* /etc/ 2>/dev/null
-# Make SURE that these are files, not links!
-rm -rf /etc/passwd /etc/shadow /etc/group \
-       /etc/ppp /etc/isdn /etc/ssh /etc/ioctl.save \
-       /etc/inittab /etc/network /etc/sudoers \
-       /etc/init /etc/localtime /etc/dhcpc /etc/pnm2ppa.conf 2>/dev/null
-cp -a ${FLL_MOUNTPOINT}/etc/passwd ${FLL_MOUNTPOINT}/etc/shadow ${FLL_MOUNTPOINT}/etc/group \
-      ${FLL_MOUNTPOINT}/etc/ppp ${FLL_MOUNTPOINT}/etc/isdn ${FLL_MOUNTPOINT}/etc/ssh \
-      ${FLL_MOUNTPOINT}/etc/inittab ${FLL_MOUNTPOINT}/etc/network ${FLL_MOUNTPOINT}/etc/sudoers \
-      ${FLL_MOUNTPOINT}/sbin/init ${FLL_MOUNTPOINT}/etc/dhcpc /etc/ 2>/dev/null
-
-if [ -n "$SECURE" -a -f /etc/inittab.secure ]; then
-rm -f /etc/inittab
-mv -f /etc/inittab.secure /etc/inittab
-fi
-
-# Extremely important, init crashes on shutdown if this is only a link
-:> /etc/ioctl.save
-:> /etc/pnm2ppa.conf
-# Diet libc bug workaround
-cp -f ${FLL_MOUNTPOINT}/etc/localtime /etc/localtime
-echo "${BLUE}Done.${NORMAL}"
-
-# Must exist for samba to work
-[ -d /var/lib/samba ] && :> /var/lib/samba/unexpected.tdb
-
-# Kernel 2.6 bug?
-chmod 1777 /var/tmp
-
-# Now tell kernel where the real modprobe lives
-echo "/sbin/modprobe" > /proc/sys/kernel/modprobe
-
-case "$cmdline" in *atapicd*|*idecd*) # Use ide-cd for ATAPI-only CD-Rom(s)
-/sbin/modprobe ide-cd >/dev/null 2>&1 ;;
-*)                                    # Check for IDE-SCSI capable CD-Rom(s) first
-/sbin/modprobe ide-scsi >/dev/null 2>&1 ;;
-esac
-
-# Change root device from /dev/fd0 to /dev/ram0
-echo "0x100" > /proc/sys/kernel/real-root-dev
-
-# Give control to the init process.
-echo "${CRE}${BLUE}Starting init process.${NORMAL}"
-rm -f /linuxrc
-exit 0
-
-else
-echo "${CRE}${RED}Can't find KANOTIX filesystem, sorry.${NORMAL}"
-echo "${RED}Dropping you to a (very limited) shell.${NORMAL}"
-echo "${RED}Press reset button to quit.${NORMAL}"
-echo ""
-echo "Additional builtin commands avaliable:"
-help
-echo ""
-PS1="${FLL_LIVE_USER}# "
-export PS1
-echo "6" > /proc/sys/kernel/printk
-# Allow signals
-trap 1 2 3 15
-
-echo "Modules loaded:" ; cat /proc/modules
-
-exec /static/sh
-fi

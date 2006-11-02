@@ -1,8 +1,10 @@
-kanotix-terminalserver (0.5.50) UNRELEASED; urgency=low
+kanotix-terminalserver (0.5.50) unstable; urgency=low
 
-  * NOT RELEASED YET
+  * don't add /usr/X11R6/bin/ to search path.
+  * re- indent.
+  * don't rely on /etc/sysconfig/i18n.
 
- -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Wed,  1 Nov 2006 00:35:00 +0100
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Thu,  2 Nov 2006 22:15:37 +0100
 
 kanotix-terminalserver (0.5.49) unstable; urgency=low
 

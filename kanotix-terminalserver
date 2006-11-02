@@ -21,7 +21,7 @@ FLL_MOUNTPOINT="/KNOPPIX"
 [ -r /etc/default/distro ] && source /etc/default/distro
 
 
-PATH="/bin:/sbin:/usr/bin:/usr/sbin:/usr/X11R6/bin"
+PATH="/bin:/sbin:/usr/bin:/usr/sbin"
 export PATH
 
 umask 022
@@ -42,7 +42,6 @@ APPEND=""
 STOPSERVICES="nfs-kernel-server nfs-common portmap dhcp3-server"
 
 # LANG et al.
-[ -f /etc/sysconfig/i18n ] && { . /etc/sysconfig/i18n;  export LANG LC_ALL; }
 [ -f /etc/sysconfig/kanotix-terminalserver ] && . /etc/sysconfig/kanotix-terminalserver
 
 XDIALOG_HIGH_DIALOG_COMPAT=1
@@ -55,29 +54,46 @@ KERNEL="$(uname -r)"
 # Utility functions, usually called in $0 "start"
 # Variable substitution has to be finished before
 
-bailout(){
+bailout() {
 # Leave and remove temporary files
-   rm -f "$TMP"
-   [ "$1" = "2" ] && rm -f "$CONFIG"
-   exit $1
+	rm -f "$TMP"
+	[ "$1" = "2" ] && rm -f "$CONFIG"
+	exit $1
 }
 
-validip(){
-echo "$1" | egrep -q -e '[0-9]+\.[0-9]+\.[0-9]+.[0-9]+'
-return $?
+validip() {
+	echo "$1" | egrep -q -e '[0-9]+\.[0-9]+\.[0-9]+.[0-9]+'
+	return "$?"
 }
 
-mkdhcpdconf(){
-# Generate dhcpd.conf from template
-[ ! -f /etc/dhcp3/dhcpd.conf"$TMPSUFFIX" ] && mv -f /etc/dhcp3/dhcpd.conf /etc/dhcp3/dhcpd.conf"$TMPSUFFIX"
-ALLNAMESERVERS=""
-case "$OPTIONS" in *dns*) ALLNAMESERVERS="${IP}";; esac
-for i in $NAMESERVERS; do ALLNAMESERVERS="${ALLNAMESERVERS:+$ALLNAMESERVERS,} $i"; done
-GATEWAYS="$GATEWAY"
-case "$OPTIONS" in *masq*) GATEWAYS="${IP} $GATEWAYS";; esac
-ALLGATEWAYS=""
-for i in $GATEWAYS; do ALLGATEWAYS="${ALLGATEWAYS:+$ALLGATEWAYS,} $i"; done
-cat >/etc/dhcp3/dhcpd.conf <<EOT
+mkdhcpdconf() {
+	# Generate dhcpd.conf from template
+	[ ! -f /etc/dhcp3/dhcpd.conf"$TMPSUFFIX" ] && mv -f /etc/dhcp3/dhcpd.conf /etc/dhcp3/dhcpd.conf"$TMPSUFFIX"
+	ALLNAMESERVERS=""
+
+	case "$OPTIONS" in
+		*dns*)
+			ALLNAMESERVERS="${IP}"
+			;;
+	esac
+
+	for i in $NAMESERVERS; do 
+		ALLNAMESERVERS="${ALLNAMESERVERS:+$ALLNAMESERVERS,} $i"
+	done
+
+	GATEWAYS="$GATEWAY"
+	case "$OPTIONS" in
+		*masq*)
+			GATEWAYS="${IP} $GATEWAYS"
+			;;
+	esac
+
+	ALLGATEWAYS=""
+	for i in $GATEWAYS; do
+		ALLGATEWAYS="${ALLGATEWAYS:+$ALLGATEWAYS,} $i"
+	done
+	
+	cat >/etc/dhcp3/dhcpd.conf <<EOT
 # dhcpd.conf for KANOTIX terminalserver
 
 # global settings
@@ -96,83 +112,104 @@ subnet ${NETWORK}.0 netmask ${NETMASK} {
   ${ALLGATEWAYS:+option routers $ALLGATEWAYS;}
 }
 EOT
-[ ! -f /etc/default/dhcp3-server"$TMPSUFFIX" ] && mv -f /etc/default/dhcp3-server /etc/default/dhcp3-server"$TMPSUFFIX"
-echo "INTERFACES=\"$DEVICE\"" >/etc/default/dhcp3-server
+
+	[ ! -f /etc/default/dhcp3-server"$TMPSUFFIX" ] && mv -f /etc/default/dhcp3-server /etc/default/dhcp3-server"$TMPSUFFIX"
+	echo "INTERFACES=\"$DEVICE\"" >/etc/default/dhcp3-server
 }
 
-mkexports(){
-[ ! -f /etc/exports"$TMPSUFFIX" ] && mv -f /etc/exports /etc/exports"$TMPSUFFIX"
-awk '{if(/^#/){print}else{exit}}' /etc/exports"$TMPSUFFIX" >/etc/exports
-echo "/cdrom ${NETWORK}.0/${NETMASK}(ro,no_root_squash,async)" >>/etc/exports
-awk '{if(body || /^[^#]/){body=1;print}}' /etc/exports"$TMPSUFFIX" >>/etc/exports
+mkexports() {
+	[ ! -f /etc/exports"$TMPSUFFIX" ] && mv -f /etc/exports /etc/exports"$TMPSUFFIX"
+	awk '{if(/^#/){print}else{exit}}' /etc/exports"$TMPSUFFIX" >/etc/exports
+	echo "/cdrom ${NETWORK}.0/${NETMASK}(ro,no_root_squash,async)" >>/etc/exports
+	awk '{if(body || /^[^#]/){body=1;print}}' /etc/exports"$TMPSUFFIX" >>/etc/exports
 }
 
-mkhostsallow(){
-[ ! -f /etc/hosts.allow"$TMPSUFFIX" ] && mv -f /etc/hosts.allow /etc/hosts.allow"$TMPSUFFIX"
-awk '{if(/^#/){print}else{exit}}' /etc/hosts.allow"$TMPSUFFIX" >/etc/hosts.allow
-echo "portmap in.tftpd rpc.mountd mountd rpc.lockd lockd rpc.nfsd nfsd : 127.0.0.1 LOCAL ${NETWORK}.0/${NETMASK} : ALLOW" >>/etc/hosts.allow
-awk '{if(body || /^[^#]/){body=1;print}}' /etc/hosts.allow"$TMPSUFFIX" >>/etc/hosts.allow
+mkhostsallow() {
+	[ ! -f /etc/hosts.allow"$TMPSUFFIX" ] && mv -f /etc/hosts.allow /etc/hosts.allow"$TMPSUFFIX"
+	awk '{if(/^#/){print}else{exit}}' /etc/hosts.allow"$TMPSUFFIX" >/etc/hosts.allow
+	echo "portmap in.tftpd rpc.mountd mountd rpc.lockd lockd rpc.nfsd nfsd : 127.0.0.1 LOCAL ${NETWORK}.0/${NETMASK} : ALLOW" >>/etc/hosts.allow
+	awk '{if(body || /^[^#]/){body=1;print}}' /etc/hosts.allow"$TMPSUFFIX" >>/etc/hosts.allow
 }
 
-mktftpboot(){
-# Create tftpboot directory and config
-mkdir -p /tmp/tftpboot/pxelinux.cfg
-[ ! -L /tftpboot ] && ln -s /tmp/tftpboot /
-install -m 644 /usr/lib/syslinux/pxelinux.0 /usr/share/kanotix-terminalserver/templates/tftpboot/* /tftpboot/
-[ -e /cdrom/boot/isolinux/logo.16 ] && install -m 644 /cdrom/boot/isolinux/logo.16 /tftpboot/
-install -m 644 /boot/vmlinuz-$KERNEL /tftpboot/vmlinuz
-rdev /tftpboot/vmlinuz /dev/ram1
-KEYTABLE=""
-case "$LANGUAGE" in de|at|ch) KEYTABLE="KBDMAP german.kbd";; esac
-SECURE=""
-case "$OPTIONS" in *secure*) SECURE=" secure";; esac
-case "$OPTIONS" in *nx*) APPEND="${APPEND:+ $APPEND} desktop=nx nx_server_host=${IP}";; esac
-cat >/tftpboot/pxelinux.cfg/default <<EOT
+mktftpboot() {
+	# Create tftpboot directory and config
+	mkdir -p /tmp/tftpboot/pxelinux.cfg
+	[ ! -L /tftpboot ] && ln -s /tmp/tftpboot /
+	install -m 644 /usr/lib/syslinux/pxelinux.0 /usr/share/kanotix-terminalserver/templates/tftpboot/* /tftpboot/
+	[ -e /cdrom/boot/isolinux/logo.16 ] && install -m 644 /cdrom/boot/isolinux/logo.16 /tftpboot/
+	install -m 644 /boot/vmlinuz-$KERNEL /tftpboot/vmlinuz
+	rdev /tftpboot/vmlinuz /dev/ram1
+
+	KEYTABLE=""
+	case "$LANG" in 
+		de*|at*|ch*)
+			KEYTABLE="KBDMAP german.kbd"
+			;;
+	esac
+
+	SECURE=""
+	case "$OPTIONS" in
+		*secure*)
+			SECURE=" secure"
+			;;
+	esac
+
+	case "$OPTIONS" in
+		*nx*)
+			APPEND="${APPEND:+ $APPEND} desktop=nx nx_server_host=${IP}"
+			;;
+	esac
+	
+	cat >/tftpboot/pxelinux.cfg/default <<EOT
 DEFAULT vmlinuz
-APPEND$SECURE nfsdir=${IP}:/cdrom nodhcp lang=$LANGUAGE ramdisk_size=100000 init=/etc/init apm=power-off nomce vga=791 initrd=miniroot.gz quiet${APPEND:+ $APPEND} BOOT_IMAGE=knoppix
+APPEND$SECURE nfsdir=${IP}:/cdrom nodhcp lang=`echo $LANG | sed s/_.*//` ramdisk_size=100000 init=/etc/init apm=power-off nomce vga=791 initrd=miniroot.gz quiet${APPEND:+ $APPEND} BOOT_IMAGE=knoppix
 TIMEOUT 300
 $KEYTABLE
 PROMPT 1
 DISPLAY boot.msg
 LABEL kanotix
 KERNEL vmlinuz
-APPEND$SECURE nfsdir=${IP}:/cdrom nodhcp lang=$LANGUAGE ramdisk_size=100000 init=/etc/init apm=power-off nomce vga=791 initrd=miniroot.gz quiet${APPEND:+ $APPEND} BOOT_IMAGE=knoppix
+APPEND$SECURE nfsdir=${IP}:/cdrom nodhcp lang=`echo $LANG | sed s/_.*//` ramdisk_size=100000 init=/etc/init apm=power-off nomce vga=791 initrd=miniroot.gz quiet${APPEND:+ $APPEND} BOOT_IMAGE=knoppix
 LABEL kanotix-txt
 KERNEL vmlinuz
-APPEND$SECURE nfsdir=${IP}:/cdrom nodhcp lang=$LANGUAGE ramdisk_size=100000 init=/etc/init apm=power-off nomce vga=normal initrd=miniroot.gz${APPEND:+ $APPEND} BOOT_IMAGE=knoppix
+APPEND$SECURE nfsdir=${IP}:/cdrom nodhcp lang=`echo $LANG | sed s/_.*//` ramdisk_size=100000 init=/etc/init apm=power-off nomce vga=normal initrd=miniroot.gz${APPEND:+ $APPEND} BOOT_IMAGE=knoppix
 LABEL expert
 KERNEL vmlinuz
-APPEND$SECURE nfsdir=${IP}:/cdrom nodhcp lang=$LANGUAGE ramdisk_size=100000 init=/etc/init apm=power-off nomce vga=791 initrd=miniroot.gz${APPEND:+ $APPEND} BOOT_IMAGE=expert
+APPEND$SECURE nfsdir=${IP}:/cdrom nodhcp lang=`echo $LANG | sed s/_.*//` ramdisk_size=100000 init=/etc/init apm=power-off nomce vga=791 initrd=miniroot.gz${APPEND:+ $APPEND} BOOT_IMAGE=expert
 LABEL fb1024x768
 KERNEL vmlinuz
-APPEND$SECURE nfsdir=${IP}:/cdrom nodhcp lang=$LANGUAGE ramdisk_size=100000 init=/etc/init apm=power-off nomce vga=791 xmodule=fbdev initrd=miniroot.gz${APPEND:+ $APPEND} BOOT_IMAGE=knoppix
+APPEND$SECURE nfsdir=${IP}:/cdrom nodhcp lang=`echo $LANG | sed s/_.*//` ramdisk_size=100000 init=/etc/init apm=power-off nomce vga=791 xmodule=fbdev initrd=miniroot.gz${APPEND:+ $APPEND} BOOT_IMAGE=knoppix
 LABEL fb800x600
 KERNEL vmlinuz
-APPEND$SECURE nfsdir=${IP}:/cdrom nodhcp lang=$LANGUAGE ramdisk_size=100000 init=/etc/init apm=power-off nomce vga=788 xmodule=fbdev initrd=miniroot.gz${APPEND:+ $APPEND} BOOT_IMAGE=knoppix
+APPEND$SECURE nfsdir=${IP}:/cdrom nodhcp lang=`echo $LANG | sed s/_.*//` ramdisk_size=100000 init=/etc/init apm=power-off nomce vga=788 xmodule=fbdev initrd=miniroot.gz${APPEND:+ $APPEND} BOOT_IMAGE=knoppix
 EOT
 }
 
-mketherboot(){
-# Make etherboot image
-rm -f /tmp/net-boot.img
-drivex='drive x: file="/tmp/net-boot.img"'
-( grep -v -i "drive.*x:" ~/.mtoolsrc 2>/dev/null ; echo "$drivex" ) > ~/.mtoolsrc.new
-mv -f ~/.mtoolsrc.new ~/.mtoolsrc
-mformat -C -t 80 -s 36 -h 2 x:
-mcopy /tftpboot/pxelinux.cfg/default x:syslinux.cfg
-mcopy /tftpboot/vmlinuz /tftpboot/miniroot.gz \
-      /usr/share/kanotix-terminalserver/templates/tftpboot/* x:
-syslinux /tmp/net-boot.img
-mknbi-dos --rdbase=0x367400 /tmp/net-boot.img > /tftpboot/etherboot.nbi
-rm -f /tmp/net-boot.img
+mketherboot() {
+	# Make etherboot image
+	rm -f /tmp/net-boot.img
+	drivex='drive x: file="/tmp/net-boot.img"'
+	( grep -v -i "drive.*x:" ~/.mtoolsrc 2>/dev/null ; echo "$drivex" ) > ~/.mtoolsrc.new
+	mv -f ~/.mtoolsrc.new ~/.mtoolsrc
+	mformat -C -t 80 -s 36 -h 2 x:
+	mcopy /tftpboot/pxelinux.cfg/default x:syslinux.cfg
+	mcopy /tftpboot/vmlinuz /tftpboot/miniroot.gz \
+	      /usr/share/kanotix-terminalserver/templates/tftpboot/* x:
+	syslinux /tmp/net-boot.img
+	mknbi-dos --rdbase=0x367400 /tmp/net-boot.img > /tftpboot/etherboot.nbi
+	rm -f /tmp/net-boot.img
 }
 
-mknamedconf(){
-[ ! -f /etc/bind/named.conf"$TMPSUFFIX" ] && mv -f /etc/bind/named.conf /etc/bind/named.conf"$TMPSUFFIX"
-FORWARDERS=""
-for i in $NAMESERVERS; do FORWARDERS="$FORWARDERS $i;"; done
-[ -n "$FORWARDERS" ] && FORWARDERS=" forwarders {${FORWARDERS}};"
-cat >/etc/bind/named.conf <<EOT
+mknamedconf() {
+	[ ! -f /etc/bind/named.conf"$TMPSUFFIX" ] && mv -f /etc/bind/named.conf /etc/bind/named.conf"$TMPSUFFIX"
+	
+	FORWARDERS=""
+	for i in $NAMESERVERS; do
+		FORWARDERS="$FORWARDERS $i;"
+	done
+
+	[ -n "$FORWARDERS" ] && FORWARDERS=" forwarders {${FORWARDERS}};"
+	cat >/etc/bind/named.conf <<EOT
 // bind9 configuration file for KANOTIX-Terminalserver
 options { directory "/var/cache/bind"; query-source address * port 53;${FORWARDERS} auth-nxdomain no; };
 zone "."                { type hint; file "/etc/bind/db.root"; };
@@ -183,10 +220,11 @@ zone "255.in-addr.arpa" { type master; file "/etc/bind/db.255"; };
 EOT
 }
 
-mksquidconf(){
-# Not used yet
-[ ! -f /etc/squid/squid.conf"$TMPSUFFIX" ] && mv -f /etc/squid/squid.conf /etc/squid/squid.conf"$TMPSUFFIX"
-cat >/etc/squid/squid.conf <<EOT
+mksquidconf() {
+	# Not used yet
+	[ ! -f /etc/squid/squid.conf"$TMPSUFFIX" ] && mv -f /etc/squid/squid.conf /etc/squid/squid.conf"$TMPSUFFIX"
+
+	cat >/etc/squid/squid.conf <<EOT
 # squid.conf for KANOTIX-Terminalserver
 # Transparent proxy config
 visible_hostname ${FLL_DISTRO_NAME}
@@ -236,237 +274,259 @@ icp_access deny all
 EOT
 }
 
-mkinitrd(){
-# Replaces the mkinitrd script that is normally present
-echo "Making Mini Rootdisk."
-MINISIZE=16384 # In kilobytes, we're currently (2.6.14) at 10 MB for default options!
-MINIROOT="/tmp/kanotix-terminalserver-miniroot"
-RAMDEV=""
-rm -rf "$MINIROOT"
-mkdir -p "$MINIROOT"
-RAMDISK="/tmp/${FLL_DISTRO_NAME}-ramdisk.$$"
-rm -f "$RAMDISK"
-dd if=/dev/zero of="$RAMDISK" bs="${MINISIZE}k" count=1
-mke2fs -L "${FLL_DISTRO_NAME} Miniroot" -b 1024 -N 8192 -O none -F -q -m 0 "$RAMDISK" "${MINISIZE}"
-mount -o loop,rw -t ext2 "$RAMDISK" "$MINIROOT"
-rm -rf "$MINIROOT/lost+found"
-for i in cdrom dev etc etc/default lib mnt media modules/net modules/scsi proc static sys var/run "${FLL_MEDIA_DIR}"; do
-mkdir -p "$MINIROOT/$i"
-done
-for i in bin boot opt sbin usr; do
-ln -s ${FLL_MOUNTPOINT}/"$i" "$MINIROOT/$i"
-done
-ln -s /var/tmp "$MINIROOT"/tmp
-# Copy Templates
-cp -a /usr/share/kanotix-terminalserver/templates/miniroot/* "${MINIROOT}/"
-cat /etc/default/distro > "${MINIROOT}/etc/default/distro"
+mkinitrd() {
+	# Replaces the mkinitrd script that is normally present
+	echo "Making Mini Rootdisk."
+	MINISIZE=16384 # In kilobytes, we're currently (2.6.14) at 10 MB for default options!
+	MINIROOT="/tmp/kanotix-terminalserver-miniroot"
+	RAMDEV=""
 
-# Copy Programs
-if [ -f /bin/busybox ]; then
-	# Use busybox
-	cp /bin/busybox "${MINIROOT}/static/busybox"
-	for f in $(busybox 2>&1|grep -A 100 functions|tail +2|sed "s/,//g;s/busybox//;s/linuxrc//;s/pivot_root//"); do
-		ln -s busybox "${MINIROOT}/static/$f"
-	done
+	rm -rf "$MINIROOT"
+	mkdir -p "$MINIROOT"
+	RAMDISK="/tmp/${FLL_DISTRO_NAME}-ramdisk.$$"
+	rm -f "$RAMDISK"
+
+	dd if=/dev/zero of="$RAMDISK" bs="${MINISIZE}k" count=1
+	mke2fs -L "${FLL_DISTRO_NAME} Miniroot" -b 1024 -N 8192 -O none -F -q -m 0 "$RAMDISK" "${MINISIZE}"
+	mount -o loop,rw -t ext2 "$RAMDISK" "$MINIROOT"
+	rm -rf "$MINIROOT/lost+found"
 	
-	BIN_DEP="/sbin/pump /sbin/portmap"
-else
-	# use legacy ash-kanotix
-	# keep in mind that ash-kanotix is essentially 12 year old NetBSD 
-	# code and completely unsupported.
-	# DON'T use!
-	cp -a /bin/ash.static "${MINIROOT}/static/ash"
-	ln -s /static/ash     "${MINIROOT}/static/init"
-	ln -s /static/ash     "${MINIROOT}/static/sh"
-
-	BIN_DEP="/bin/mount /sbin/pump /sbin/ifconfig /sbin/portmap /sbin/losetup"
-	# Check if we need the Kernel 2.6 insmod
-	case "$KERNEL" in 2.6.*) BIN_DEP="$BIN_DEP /sbin/insmod" ;; esac
-fi
-
-# Unfortunately, these are not integrated in busybox-kanotix yet, so we need some shared
-# libs. :(
-for i in ${BIN_DEP}; do
-	cp -a "$i" "${MINIROOT}/static/"
-	ldd "$i" | while read lib skip path relax; do
-		[ -n "$path" ] && cp -up "$path" "${MINIROOT}/lib/${lib##*/}"
+	for i in cdrom dev etc etc/default lib mnt media modules/net modules/scsi proc static sys var/run "${FLL_MEDIA_DIR}"; do
+		mkdir -p "$MINIROOT/$i"
 	done
-done
 
-cp /lib/libnss_files*.so.? /lib/libnss_dns*.so.? /lib/ld-linux.so.? "${MINIROOT}/lib/"
+	for i in bin boot opt sbin usr; do
+		ln -s ${FLL_MOUNTPOINT}/"$i" "$MINIROOT/$i"
+	done
 
-# KANOTIX support
-cp /lib/libattr.so.? /lib/libacl.so.? "${MINIROOT}/lib/"
-strip "${MINIROOT}"/lib/*
+	ln -s /var/tmp "$MINIROOT"/tmp
+	
+	# Copy Templates
+	cp -a /usr/share/kanotix-terminalserver/templates/miniroot/* "${MINIROOT}/"
+	cat /etc/default/distro > "${MINIROOT}/etc/default/distro"
 
-# Copy device nodes
-cp -a /dev/{null,zero,console,cloop*,hd*,sd*,ub*,init*,kmem,fd*,loop*,mem,ram*,*random,pts,psaux,ptmx,std*,sndstat,systty,tty,tty[0-9]*} "${MINIROOT}/dev/" &> /dev/null
+	# Copy Programs
+	if [ -f /bin/busybox ]; then
+		# Use busybox
+		cp /bin/busybox "${MINIROOT}/static/busybox"
+		for f in $(busybox 2>&1|grep -A 100 functions|tail +2|sed "s/,//g;s/busybox//;s/linuxrc//;s/pivot_root//"); do
+			ln -s busybox "${MINIROOT}/static/$f"
+		done
+	
+		BIN_DEP="/sbin/pump /sbin/portmap"
+	else
+		# use legacy ash-kanotix
+		# keep in mind that ash-kanotix is essentially 12 year old NetBSD 
+		# code and completely unsupported.
+		# DON'T use!
+		cp -a /bin/ash.static "${MINIROOT}/static/ash"
+		ln -s /static/ash     "${MINIROOT}/static/init"
+		ln -s /static/ash     "${MINIROOT}/static/sh"
 
-# Copy kernel modules
-cp /lib/modules/$KERNEL/kernel/*/*/{af_packet,sunrpc,lockd,nfs_acl,nfs}.*o "${MINIROOT}/modules/net/"
+		BIN_DEP="/bin/mount /sbin/pump /sbin/ifconfig /sbin/portmap /sbin/losetup"
+		# Check if we need the Kernel 2.6 insmod
+		case "$KERNEL" in 2.6.*) BIN_DEP="$BIN_DEP /sbin/insmod" ;; esac
+	fi
 
-# New in Kernel 2.4
-for i in /lib/modules/$KERNEL/kernel/lib/crc32.*o; do
-	cp "$i" "${MINIROOT}/modules/net/00_${i##*/}" 2>/dev/null
-done
+	# Unfortunately, these are not integrated in busybox-kanotix yet, so we need some shared
+	# libs. :(
+	for i in ${BIN_DEP}; do
+		cp -a "$i" "${MINIROOT}/static/"
+		ldd "$i" | while read lib skip path relax; do
+			[ -n "$path" ] && cp -up "$path" "${MINIROOT}/lib/${lib##*/}"
+		done
+	done
 
-cp /lib/modules/$KERNEL/extra/cloop.*o /lib/modules/$KERNEL/kernel/*/*/unionfs.*o "${MINIROOT}/modules/"
+	cp /lib/libnss_files*.so.? /lib/libnss_dns*.so.? /lib/ld-linux.so.? "${MINIROOT}/lib/"
 
-[ -f /lib/modules/$KERNEL/kernel/drivers/block/loop.*o ] && cp /lib/modules/$KERNEL/kernel/drivers/block/loop.*o "${MINIROOT}/modules/"
+	# KANOTIX support
+	cp /lib/libattr.so.? /lib/libacl.so.? "${MINIROOT}/lib/"
+	strip "${MINIROOT}"/lib/*
 
-[ -f /lib/modules/$KERNEL/kernel/fs/squashfs/squashfs.*o ] && cp /lib/modules/$KERNEL/kernel/fs/squashfs/squashfs.*o "${MINIROOT}/modules/"
+	# Copy device nodes
+	cp -a /dev/{null,zero,console,cloop*,hd*,sd*,ub*,init*,kmem,fd*,loop*,mem,ram*,*random,pts,psaux,ptmx,std*,sndstat,systty,tty,tty[0-9]*} "${MINIROOT}/dev/" &> /dev/null
 
-for i in $MODULES; do
-	find /lib/modules/$KERNEL/kernel/drivers/net -name "$i" -exec cp {} "${MINIROOT}/modules/net/" \;
-done
+	# Copy kernel modules
+	cp /lib/modules/$KERNEL/kernel/*/*/{af_packet,sunrpc,lockd,nfs_acl,nfs}.*o "${MINIROOT}/modules/net/"
 
-# Find and copy module dependencies as well
-for i in $MODULES; do
-awk -F: '{if($1~/'"$i"'/) {print $2}}' /lib/modules/$KERNEL/modules.dep
-done | sort | uniq | while read module relax; do [ -n "$module" ] && cp "$module" "${MINIROOT}/modules/net/00_${module##*/}"; done
+	# New in Kernel 2.4
+	for i in /lib/modules/$KERNEL/kernel/lib/crc32.*o; do
+		cp "$i" "${MINIROOT}/modules/net/00_${i##*/}" 2>/dev/null
+	done
 
-umount "${MINIROOT}"
-dd if="$RAMDISK" bs=${MINISIZE}k count=1 | gzip -9v > "${MINIROOT}.gz"
-rm -r "$RAMDISK"
-mv -f "${MINIROOT}.gz" /tftpboot/miniroot.gz
+	cp /lib/modules/$KERNEL/extra/cloop.*o /lib/modules/$KERNEL/kernel/*/*/unionfs.*o "${MINIROOT}/modules/"
+
+	[ -f /lib/modules/$KERNEL/kernel/drivers/block/loop.*o ] && cp /lib/modules/$KERNEL/kernel/drivers/block/loop.*o "${MINIROOT}/modules/"
+
+	[ -f /lib/modules/$KERNEL/kernel/fs/squashfs/squashfs.*o ] && cp /lib/modules/$KERNEL/kernel/fs/squashfs/squashfs.*o "${MINIROOT}/modules/"
+
+	for i in $MODULES; do
+		find /lib/modules/$KERNEL/kernel/drivers/net -name "$i" -exec cp {} "${MINIROOT}/modules/net/" \;
+	done
+
+	# Find and copy module dependencies as well
+	for i in $MODULES; do
+		awk -F: '{if($1~/'"$i"'/) {print $2}}' /lib/modules/$KERNEL/modules.dep
+	done | sort | uniq | while read module relax; do [ -n "$module" ] && cp "$module" "${MINIROOT}/modules/net/00_${module##*/}"; done
+
+	umount "${MINIROOT}"
+	dd if="$RAMDISK" bs=${MINISIZE}k count=1 | gzip -9v > "${MINIROOT}.gz"
+	rm -r "$RAMDISK"
+	mv -f "${MINIROOT}.gz" /tftpboot/miniroot.gz
 }
 
-runnfs(){
-/etc/init.d/nfs-kernel-server stop >/dev/null 2>&1
-/etc/init.d/nfs-common stop >/dev/null 2>&1
-/etc/init.d/portmap stop >/dev/null 2>&1
-mkexports
-mkhostsallow
-/etc/init.d/portmap start
-/etc/init.d/nfs-common start
-/etc/init.d/nfs-kernel-server start
+runnfs() {
+	/etc/init.d/nfs-kernel-server stop >/dev/null 2>&1
+	/etc/init.d/nfs-common stop >/dev/null 2>&1
+	/etc/init.d/portmap stop >/dev/null 2>&1
+	mkexports
+	mkhostsallow
+	/etc/init.d/portmap start
+	/etc/init.d/nfs-common start
+	/etc/init.d/nfs-kernel-server start
 }
 
-rundhcpd(){
-/etc/init.d/dhcp3-server stop >/dev/null 2>&1
-mkdhcpdconf
-rm -f /var/lib/dhcp3/dhcpd.leases* 2>/dev/null
-touch /var/lib/dhcp3/dhcpd.leases
-/etc/init.d/dhcp3-server start
+rundhcpd() {
+	/etc/init.d/dhcp3-server stop >/dev/null 2>&1
+	mkdhcpdconf
+	rm -f /var/lib/dhcp3/dhcpd.leases* 2>/dev/null
+	touch /var/lib/dhcp3/dhcpd.leases
+	/etc/init.d/dhcp3-server start
 }
 
-killtftpd(){
-PID="$(ps auxww | awk '/in\.tftpd/{if(!/awk/){print $2}}')"
-[ -n "$PID" ] && kill $PID 2>/dev/null
+killtftpd() {
+	PID="$(ps auxww | awk '/in\.tftpd/{if(!/awk/){print $2}}')"
+	[ -n "$PID" ] && kill $PID 2>/dev/null
 }
 
 runtftpd(){
-killtftpd
-in.tftpd -l -s /tftpboot
+	killtftpd
+	in.tftpd -l -s /tftpboot
 }
 
-runiptables(){
-case "$OPTIONS" in *masq*)
-iptables -P FORWARD DROP
-ip6tables -P FORWARD DROP >/dev/null 2>&1
-echo "1" >/proc/sys/net/ipv4/ip_forward
-for ARGS in "FORWARD -i ${DEVICE} -s ${NETWORK}.0/${NETMASK} -j ACCEPT" \
-            "FORWARD -m state --state ESTABLISHED,RELATED -j ACCEPT" \
-	    "POSTROUTING -t nat -j MASQUERADE"; do
-iptables -D $ARGS >/dev/null 2>&1 ; iptables -A $ARGS
-ip6tables -D $ARGS >/dev/null 2>&1 ; ip6tables -A $ARGS >/dev/null 2>&1
-done
-;;
-esac
+runiptables() {
+	case "$OPTIONS" in
+		*masq*)
+			iptables -P FORWARD DROP
+			ip6tables -P FORWARD DROP >/dev/null 2>&1
+			echo "1" >/proc/sys/net/ipv4/ip_forward
+			for ARGS in "FORWARD -i ${DEVICE} -s ${NETWORK}.0/${NETMASK} -j ACCEPT" \
+			            "FORWARD -m state --state ESTABLISHED,RELATED -j ACCEPT" \
+				    "POSTROUTING -t nat -j MASQUERADE"; do
+				iptables -D $ARGS >/dev/null 2>&1 ; iptables -A $ARGS
+				ip6tables -D $ARGS >/dev/null 2>&1 ; ip6tables -A $ARGS >/dev/null 2>&1
+			done
+			;;
+	esac
 }
 
-runbind(){
-case "$OPTIONS" in *dns*)
-if [ -x /etc/init.d/bind9 ]; then
-/etc/init.d/bind9 stop >/dev/null 2>&1; mknamedconf; /etc/init.d/bind9 start
-else
-echo "bind9 not installed, skipping." >&2
-fi
-;;
-esac
+runbind() {
+	case "$OPTIONS" in
+		*dns*)
+			if [ -x /etc/init.d/bind9 ]; then
+				/etc/init.d/bind9 stop >/dev/null 2>&1; mknamedconf; /etc/init.d/bind9 start
+			else
+				echo "bind9 not installed, skipping." >&2
+			fi
+			;;
+	esac
 }
 
-runsquid(){
-# Not used yet
-case "$OPTIONS" in *squid*)
-if [ -x /etc/init.d/squid ]; then
-/etc/init.d/squid stop >/dev/null 2>&1
-[ ! -d /var/spool/squid/00 ] && squid -z
-mksquidconf
-/etc/init.d/squid start
-for ARGS in "PREROUTING -t nat -i ${DEVICE} -p tcp -s ${NETWORK}.0/${NETMASK} --dport 80 -j REDIRECT --to-port 8080"; do
-iptables -D $ARGS >/dev/null 2>&1 ; iptables -I $ARGS
-done
-else
-echo "squid not installed, skipping." >&2
-fi
-;;
-esac
+runsquid() {
+	# Not used yet
+	case "$OPTIONS" in
+		*squid*)
+			if [ -x /etc/init.d/squid ]; then
+				/etc/init.d/squid stop >/dev/null 2>&1
+				[ ! -d /var/spool/squid/00 ] && squid -z
+				mksquidconf
+				/etc/init.d/squid start
+				
+				for ARGS in "PREROUTING -t nat -i ${DEVICE} -p tcp -s ${NETWORK}.0/${NETMASK} --dport 80 -j REDIRECT --to-port 8080"; do
+					iptables -D $ARGS >/dev/null 2>&1 ; iptables -I $ARGS
+				done
+			else
+				echo "squid not installed, skipping." >&2
+			fi
+			;;
+	esac
 }
 
-killsquid(){
-case "$OPTIONS" in *squid*)
-if [ -x /etc/init.d/squid ]; then
-/etc/init.d/squid stop >/dev/null 2>&1
-for ARGS in "PREROUTING -t nat -i ${DEVICE} -p tcp -s ${NETWORK}.0/${NETMASK} --dport 80 -j REDIRECT --to-port 8080"; do
-iptables -D $ARGS >/dev/null 2>&1
-done
-fi
-;;
-esac
+killsquid() {
+	case "$OPTIONS" in
+		*squid*)
+			if [ -x /etc/init.d/squid ]; then
+				/etc/init.d/squid stop >/dev/null 2>&1
+				
+				for ARGS in "PREROUTING -t nat -i ${DEVICE} -p tcp -s ${NETWORK}.0/${NETMASK} --dport 80 -j REDIRECT --to-port 8080"; do
+					iptables -D $ARGS >/dev/null 2>&1
+				done
+			fi
+			;;
+	esac
 }
 
 # EOF Utility functions
 
 trap bailout 2 15
 
-[ -f /etc/sysconfig/i18n ] && . /etc/sysconfig/i18n
-
 DIALOG="dialog"
 [ -n "$DISPLAY" ] && [ -x /usr/bin/Xdialog ] && DIALOG="Xdialog"
 
 case "$1" in
-stop)
-{ [ ! -f "$STATUS" ] || [ "$(<$STATUS)" != "running" ]; } && { echo "KANOTIX-Terminalserver not running."; exit 1; }
-for s in $STOPSERVICES; do /etc/init.d/$s stop; done
-killsquid
-killtftpd
-echo "configured" >"$STATUS"
-;;
-start)
-[ -f "$CONFIG" ] || { echo "KANOTIX-Terminalserver not configured yet, entering setup."; exec "$0" setup; }
-[ -f "$STATUS" ] && [ "$(<$STATUS)" = "running" ] && { echo "KANOTIX-Terminalserver already running."; exit 1; }
-mktftpboot
-mkinitrd
-mketherboot
-rundhcpd
-runtftpd
-runnfs
-runiptables
-runbind
-runsquid
-echo "running" >"$STATUS"
-;;
-unsetup|uninstall|unconfigure|deconfigure)
-[ -f "$STATUS" ] && [ "$(<$STATUS)" = "running" ] && { echo "KANOTIX-Terminalserver running, stopping services."; $0 stop; }
-for f in $CONFIGFILES; do [ -f "$f$TMPSUFFIX" ] && { rm -f "$f"; mv -f "$f$TMPSUFFIX" "$f"; }; done
-rm -f "$STATUS" "$CONFIG"
-;;
-setup|install|configure)
-# Build $CONFIG configfile
-rm -f "$CONFIG"
-echo "# KANOTIX Terminalserver config `date`" >"$CONFIG"
+	stop)
+		{ [ ! -f "$STATUS" ] || [ "$(<$STATUS)" != "running" ]; } && { echo "KANOTIX-Terminalserver not running."; exit 1; }
+		
+		for s in $STOPSERVICES; do
+			/etc/init.d/$s stop
+		done
+		
+		killsquid
+		killtftpd
+		
+		echo "configured" >"$STATUS"
+		;;
+	start)
+		[ -f "$CONFIG" ] || { echo "KANOTIX-Terminalserver not configured yet, entering setup."; exec "$0" setup; }
+		[ -f "$STATUS" ] && [ "$(<$STATUS)" = "running" ] && { echo "KANOTIX-Terminalserver already running."; exit 1; }
+		
+		mktftpboot
+		mkinitrd
+		mketherboot
+		rundhcpd
+		runtftpd
+		runnfs
+		runiptables
+		runbind
+		runsquid
+		echo "running" >"$STATUS"
+		;;
 
-BACKTITLE="KANOTIX TERMINALSERVER SETUP"
+	unsetup|uninstall|unconfigure|deconfigure)
+		[ -f "$STATUS" ] && [ "$(<$STATUS)" = "running" ] && { echo "KANOTIX-Terminalserver running, stopping services."; $0 stop; }
+		
+		for f in $CONFIGFILES; do
+			[ -f "$f$TMPSUFFIX" ] && { rm -f "$f"; mv -f "$f$TMPSUFFIX" "$f"; }
+		done
+		
+		rm -f "$STATUS" "$CONFIG"
+		;;
 
-case "$LANGUAGE" in
-de|at|ch)
-TITLE_CARD="Bitte wählen Sie die Netzwerkkarte aus, die am Client-Netzwerk angeschlossen ist."
-MESSAGE_CARD="Verfügbare Netzwerkkarten:"
-TITLE_RUNCONFIG="Netcardconfig aufrufen"
-MESSAGE_RUNCONFIG="Diese Netzwerkkarte wurde bisher noch nicht konfiguriert. Möchten Sie dies jetzt nachholen?"
-TITLE_IPRANGE="IP Adressraum für clients"
-MESSAGE_IPRANGE="
+	setup|install|configure)
+		# Build $CONFIG configfile
+		rm -f "$CONFIG"
+		echo "# KANOTIX Terminalserver config `date`" >"$CONFIG"
+
+		BACKTITLE="KANOTIX TERMINALSERVER SETUP"
+
+		case "$LANG" in
+			de*|at*|ch*)
+				TITLE_CARD="Bitte wählen Sie die Netzwerkkarte aus, die am Client-Netzwerk angeschlossen ist."
+				MESSAGE_CARD="Verfügbare Netzwerkkarten:"
+				TITLE_RUNCONFIG="Netcardconfig aufrufen"
+				MESSAGE_RUNCONFIG="Diese Netzwerkkarte wurde bisher noch nicht konfiguriert. Möchten Sie dies jetzt nachholen?"
+				TITLE_IPRANGE="IP Adressraum für clients"
+				MESSAGE_IPRANGE="
 Bitte geben Sie den gewünschten Bereich von IP-Adressen ein, der an Clients vergeben werden darf, Anfangs- und Endadresse durch ein einzelnes Leerzeichen getrennt.
 
 Beispiel:
@@ -475,27 +535,27 @@ Beispiel:
 für Adressvergabe von 192.168.0.100 bis (einschließlich) 192.168.0.200.
 
 "
-MESSAGE_CARDS="Wählen Sie die auf den Clients zu unterstützenden Netzwerkkarten-Typen aus:"
-TITLE_CARDS="Client Hardware"
-TITLE_OPTIONS="Optionen"
-MESSAGE_OPTIONS="Diese Optionen sind verantwortlich für Performance und Sicherheit von Server und Clients. Die Webproxy-Option sollten Sie nur auswählen, wenn Ihr Rechner über mindestens 256MB Hauptspeicher verfügt."
-TITLE_START="Server starten"
-MESSAGE_START="Der KANOTIX-Terminalserver wird nun im Hintergrund gestartet. Sie können die einzelnen Dienste (dhcpd, in.tftpd, nfsd, ...) in der Prozessliste des Systems verfolgen, und mit \"$0 stop\" oder dem entsprechenden Menü den Terminalserver ggf. wieder beenden. Über PXE netzwerk-bootfähige Rechner sollten nun von diesem Rechner booten können, und mit den notwendigen Dateien über das Netz versorgt werden. Server jetzt starten?"
-TITLE_APPEND="Client Boot-Optionen"
-MESSAGE_APPEND="Einige Hardware (bestimmte Grafikkarten, Monitore etc.) benötigen spezielle Bootoptionen, da sie nicht automatisch erkannt werden können. Sie können hier eine durch Leerzeichen getrennte Liste von Bootoptionen und Parametern angeben, die auf den Clients ausgeführt wird. Lassen Sie das Feld leer und wählen Sie \"OK\", falls keine speziellen Bootoptionen notwendig sind."
-ITEM_SECURE="Root Zugang auf den Clients abschalten"
-ITEM_DNS="Nameserver Cache/Proxy"
-ITEM_SQUID="Transparenter WWW Cache/Proxy"
-ITEM_IPTABLES="IP Masquerading+Forwarding"
-ITEM_NX="NX ThinClient setup"
-;;
-es)
-TITLE_CARD="Selecciona el dispositivo de red conectado a la red de clientes"
-MESSAGE_CARD="Dispositivos de red disponibles:"
-TITLE_RUNCONFIG="Ejecutari netcardconfig"
-MESSAGE_RUNCONFIG="Esta tarjeta de red aún no ha sido configurada. ¿Le gustaría hacerlo ahora?"
-TITLE_IPRANGE="Rango de direcciones IP para los clientes"
-MESSAGE_IPRANGE="
+				MESSAGE_CARDS="Wählen Sie die auf den Clients zu unterstützenden Netzwerkkarten-Typen aus:"
+				TITLE_CARDS="Client Hardware"
+				TITLE_OPTIONS="Optionen"
+				MESSAGE_OPTIONS="Diese Optionen sind verantwortlich für Performance und Sicherheit von Server und Clients. Die Webproxy-Option sollten Sie nur auswählen, wenn Ihr Rechner über mindestens 256MB Hauptspeicher verfügt."
+				TITLE_START="Server starten"
+				MESSAGE_START="Der KANOTIX-Terminalserver wird nun im Hintergrund gestartet. Sie können die einzelnen Dienste (dhcpd, in.tftpd, nfsd, ...) in der Prozessliste des Systems verfolgen, und mit \"$0 stop\" oder dem entsprechenden Menü den Terminalserver ggf. wieder beenden. Über PXE netzwerk-bootfähige Rechner sollten nun von diesem Rechner booten können, und mit den notwendigen Dateien über das Netz versorgt werden. Server jetzt starten?"
+				TITLE_APPEND="Client Boot-Optionen"
+				MESSAGE_APPEND="Einige Hardware (bestimmte Grafikkarten, Monitore etc.) benötigen spezielle Bootoptionen, da sie nicht automatisch erkannt werden können. Sie können hier eine durch Leerzeichen getrennte Liste von Bootoptionen und Parametern angeben, die auf den Clients ausgeführt wird. Lassen Sie das Feld leer und wählen Sie \"OK\", falls keine speziellen Bootoptionen notwendig sind."
+				ITEM_SECURE="Root Zugang auf den Clients abschalten"
+				ITEM_DNS="Nameserver Cache/Proxy"
+				ITEM_SQUID="Transparenter WWW Cache/Proxy"
+				ITEM_IPTABLES="IP Masquerading+Forwarding"
+				ITEM_NX="NX ThinClient setup"
+				;;
+			es)
+				TITLE_CARD="Selecciona el dispositivo de red conectado a la red de clientes"
+				MESSAGE_CARD="Dispositivos de red disponibles:"
+				TITLE_RUNCONFIG="Ejecutari netcardconfig"
+				MESSAGE_RUNCONFIG="Esta tarjeta de red aún no ha sido configurada. ¿Le gustaría hacerlo ahora?"
+				TITLE_IPRANGE="Rango de direcciones IP para los clientes"
+				MESSAGE_IPRANGE="
 Por favor, introduzca los rangos de direcciones IP que deberían ser accesibles por los clientes, separados por un espacio single.
 
 Ejemplo:
@@ -504,27 +564,27 @@ Ejemplo:
 para direcciones desde 192.168.0.101 hasta (inclusive) 192.168.0.200.
 
 "
-MESSAGE_CARDS="Seleccione tarjeta(s) de red para probar en las máquinas cliente:"
-TITLE_CARDS="Hardware del cliente"
-TITLE_OPTIONS="Opciones"
-MESSAGE_OPTIONS="Estas opciones determinan el rendimiento y la seguridad del servidor y los clientes. Debería seleccionar la opción webproxy sólo si su servidor tiene al menos 265MB de memoria."
-TITLE_START="Arrancando el servidor"
-MESSAGE_START="El servidor KANOTIX-Terminal se arrancará ahora. Puede observar los servicios individuales (dhcpd, in.tftpd, nfsd, ...) en el listado de procesos de su sistema. Si quiere finalizar el servidor de terminales, por favor, utilice \"$0 stop\" o el correspondiente elemento del menú. Los ordenadores con una tarjeta de red arrancable PXE deberían ser capaces de arrancar remotamente desde este ordenador a partir de ahora. ¿Arrancar el servidor?"
-TITLE_APPEND="Opciones de arranque del cliente"
-MESSAGE_APPEND="Para algún hardware (algunas tarjetas gráficas, monitores) puede ser necesario tener que especificar opciones de arranque. Aquí puede añadir una lista de opciones y parámetros separadas por espacios que serán añadidos a la línea de comandos de arranque en las máquinas cliente. Deje vacío y pulse \"OK\" si sus clientes no necesitan ninguna."
-ITEM_SECURE="Desactivar acceso root en cliente(s)"
-ITEM_DNS="Caché de servidor de nombres/proxy"
-ITEM_SQUID="Proxy WWW transparente caché"
-ITEM_IPTABLES="Enmascaramiento IP + reenvío"
-ITEM_NX="Configuración del ThinClient NX"
-;;
-*)
-TITLE_CARD="Choose network device connected to client network"
-MESSAGE_CARD="Available network devices:"
-TITLE_RUNCONFIG="Run netcardconfig"
-MESSAGE_RUNCONFIG="This network card has not been configured yet. Would you like to do this now?"
-TITLE_IPRANGE="IP Address range for clients"
-MESSAGE_IPRANGE="
+				MESSAGE_CARDS="Seleccione tarjeta(s) de red para probar en las máquinas cliente:"
+				TITLE_CARDS="Hardware del cliente"
+				TITLE_OPTIONS="Opciones"
+				MESSAGE_OPTIONS="Estas opciones determinan el rendimiento y la seguridad del servidor y los clientes. Debería seleccionar la opción webproxy sólo si su servidor tiene al menos 265MB de memoria."
+				TITLE_START="Arrancando el servidor"
+				MESSAGE_START="El servidor KANOTIX-Terminal se arrancará ahora. Puede observar los servicios individuales (dhcpd, in.tftpd, nfsd, ...) en el listado de procesos de su sistema. Si quiere finalizar el servidor de terminales, por favor, utilice \"$0 stop\" o el correspondiente elemento del menú. Los ordenadores con una tarjeta de red arrancable PXE deberían ser capaces de arrancar remotamente desde este ordenador a partir de ahora. ¿Arrancar el servidor?"
+				TITLE_APPEND="Opciones de arranque del cliente"
+				MESSAGE_APPEND="Para algún hardware (algunas tarjetas gráficas, monitores) puede ser necesario tener que especificar opciones de arranque. Aquí puede añadir una lista de opciones y parámetros separadas por espacios que serán añadidos a la línea de comandos de arranque en las máquinas cliente. Deje vacío y pulse \"OK\" si sus clientes no necesitan ninguna."
+				ITEM_SECURE="Desactivar acceso root en cliente(s)"
+				ITEM_DNS="Caché de servidor de nombres/proxy"
+				ITEM_SQUID="Proxy WWW transparente caché"
+				ITEM_IPTABLES="Enmascaramiento IP + reenvío"
+				ITEM_NX="Configuración del ThinClient NX"
+				;;
+			*)
+				TITLE_CARD="Choose network device connected to client network"
+				MESSAGE_CARD="Available network devices:"
+				TITLE_RUNCONFIG="Run netcardconfig"
+				MESSAGE_RUNCONFIG="This network card has not been configured yet. Would you like to do this now?"
+				TITLE_IPRANGE="IP Address range for clients"
+				MESSAGE_IPRANGE="
 Please enter the desired IP-Range of addresses that should be allocated by clients, separated by a single space.
 
 Example:
@@ -533,153 +593,179 @@ Example:
 for addresses from 192.168.0.101 to (and including) 192.168.0.200.
 
 "
-MESSAGE_CARDS="Choose network card(s) to support/probe on client machines:"
-TITLE_CARDS="Client hardware"
-TITLE_OPTIONS="Options"
-MESSAGE_OPTIONS="These options determine performance and security of server and clients. You should select the webproxy option only if your server has at least 265MB of memory."
-TITLE_START="Starting server"
-MESSAGE_START="The KANOTIX-Terminal Server will now be started. You may observe the individual services (dhcpd, in.tftpd, nfsd, ...) in the process list of your system. If you want to end the terminal server, please use \"$0 stop\" or the corresponding menu item. Computers with a PXE-bootable network card should be able to boot remotely from this machine now. Start server?"
-TITLE_APPEND="Client boot options"
-MESSAGE_APPEND="For some hardware (certain graphics adapters, monitors) it can be necessary to specify boot options. You may add a space-separated list of options and parameters here that will be added to the boot commandline on the client machines. Leave empty and hit \"OK\" if your clients don't require any."
-ITEM_SECURE="Disable root access on client(s)"
-ITEM_DNS="Nameserver cache/proxy"
-ITEM_SQUID="Transparent WWW cache/proxy"
-ITEM_IPTABLES="IP masquerading+forwarding"
-ITEM_NX="NX ThinClient setup"
-;;
-esac
+				MESSAGE_CARDS="Choose network card(s) to support/probe on client machines:"
+				TITLE_CARDS="Client hardware"
+				TITLE_OPTIONS="Options"
+				MESSAGE_OPTIONS="These options determine performance and security of server and clients. You should select the webproxy option only if your server has at least 265MB of memory."
+				TITLE_START="Starting server"
+				MESSAGE_START="The KANOTIX-Terminal Server will now be started. You may observe the individual services (dhcpd, in.tftpd, nfsd, ...) in the process list of your system. If you want to end the terminal server, please use \"$0 stop\" or the corresponding menu item. Computers with a PXE-bootable network card should be able to boot remotely from this machine now. Start server?"
+				TITLE_APPEND="Client boot options"
+				MESSAGE_APPEND="For some hardware (certain graphics adapters, monitors) it can be necessary to specify boot options. You may add a space-separated list of options and parameters here that will be added to the boot commandline on the client machines. Leave empty and hit \"OK\" if your clients don't require any."
+				ITEM_SECURE="Disable root access on client(s)"
+				ITEM_DNS="Nameserver cache/proxy"
+				ITEM_SQUID="Transparent WWW cache/proxy"
+				ITEM_IPTABLES="IP masquerading+forwarding"
+				ITEM_NX="NX ThinClient setup"
+				;;
+		esac
 
-rm -f "$TMP"
+		rm -f "$TMP"
 
-NETDEVICES="$(cat /proc/net/dev | awk -F: '/eth.:|tr.:|wlan.:|ath.:|ra.:|lan.:|wireless.:|firewire.:/{print $1}')"
-DEVICELIST=""
-for DEVICE in $NETDEVICES; do DEVICELIST="$DEVICELIST ${DEVICE} Netzwerkkarte_${DEVICE##eth}"; done
-rm -f "$TMP"
-$DIALOG --backtitle "$BACKTITLE" --title "$TITLE_CARD" --menu "$MESSAGE_CARD" 18 70 12 $DEVICELIST 2>"$TMP" || bailout 0
-DEVICE="$(<$TMP)" ; rm -f "$TMP"
+		NETDEVICES="$(cat /proc/net/dev | awk -F: '/eth.:|tr.:|wlan.:|ath.:|ra.:|lan.:|wireless.:|firewire.:/{print $1}')"
+		DEVICELIST=""
+		for DEVICE in $NETDEVICES; do
+			DEVICELIST="$DEVICELIST ${DEVICE} Netzwerkkarte_${DEVICE##eth}"
+		done
+		
+		rm -f "$TMP"
+		
+		"$DIALOG" --backtitle "$BACKTITLE" --title "$TITLE_CARD" --menu "$MESSAGE_CARD" 18 70 12 $DEVICELIST 2>"$TMP" || bailout 0
+		DEVICE="$(<$TMP)" ; rm -f "$TMP"
 
-while true; do
-IP="$(LANG=C LC_ALL=C ifconfig "$DEVICE" | awk '/[Ii]net [Aa]ddr/{FS="[: 	]*"; $0=$0; print $4; exit}')"
-NETMASK="$(LANG=C LC_ALL=C ifconfig "$DEVICE" | awk '/[Mm]ask/{FS="[: 	]*"; $0=$0; print $8; exit}')"
-validip "$IP" && break
-$DIALOG --backtitle "$BACKTITLE" --title "$TITLE_RUNCONFIG" --yesno "$MESSAGE_RUNCONFIG" 18 45 && netcardconfig || bailout 2
-done
+		while true; do
+			IP="$(LANG=C LC_ALL=C ifconfig "$DEVICE" | awk '/[Ii]net [Aa]ddr/{FS="[: 	]*"; $0=$0; print $4; exit}')"
+			NETMASK="$(LANG=C LC_ALL=C ifconfig "$DEVICE" | awk '/[Mm]ask/{FS="[: 	]*"; $0=$0; print $8; exit}')"
+			validip "$IP" && break
+			"$DIALOG" --backtitle "$BACKTITLE" --title "$TITLE_RUNCONFIG" --yesno "$MESSAGE_RUNCONFIG" 18 45 && netcardconfig || bailout 2
+		done
 
-NETWORK="${IP%.*}"
-HOST="${IP##*.}"
+		NETWORK="${IP%.*}"
+		HOST="${IP##*.}"
 
-[ "$HOST" -lt 201 ] && START=201 || START=151
-[ "$START" = "201" ] && END=250 || END=200
+		[ "$HOST" -lt 201 ] && START=201 || START=151
+		[ "$START" = "201" ] && END=250 || END=200
 
-IPRANGE_FROM=""
-IPRANGE_TO=""
-while [ -z "$IPRANGE_FROM" -o -z "$IPRANGE_TO" -o -z "$IPRANGE" ]; do
-IPRANGE="$NETWORK.$START $NETWORK.$END"
-rm -f "$TMP"
-$DIALOG --clear --backtitle "$BACKTITLE" --title "$TITLE_IPRANGE ($DEVICE=$IP/$NETMASK)" --inputbox "$MESSAGE_IPRANGE" 18 75 "$IPRANGE" 2>"$TMP" || bailout 2
-IPRANGE="$(<$TMP)"
-IPRANGE_FROM="${IPRANGE%% *}"
-IPRANGE_TO="${IPRANGE##* }"
-for i in "$IPRANGE_FROM" "$IPRANGE_TO"; do
-validip "$i" || IPRANGE=""
-done
-done
+		IPRANGE_FROM=""
+		IPRANGE_TO=""
+		while [ -z "$IPRANGE_FROM" -o -z "$IPRANGE_TO" -o -z "$IPRANGE" ]; do
+			IPRANGE="$NETWORK.$START $NETWORK.$END"
+			rm -f "$TMP"
+			"$DIALOG" --clear --backtitle "$BACKTITLE" --title "$TITLE_IPRANGE ($DEVICE=$IP/$NETMASK)" --inputbox "$MESSAGE_IPRANGE" 18 75 "$IPRANGE" 2>"$TMP" || bailout 2
+			IPRANGE="$(<$TMP)"
+			IPRANGE_FROM="${IPRANGE%% *}"
+			IPRANGE_TO="${IPRANGE##* }"
 
-NAMESERVERS="$(awk '/^nameserver/{printf "%s ",$2}' /etc/resolv.conf)"
-GATEWAY="$(LANG=C LC_ALL=C route -n | awk '/^0\.0\.0\.0/{print $2; exit}')"
+			for i in "$IPRANGE_FROM" "$IPRANGE_TO"; do
+				validip "$i" || IPRANGE=""
+			done
+		done
 
-echo "DEVICE=\"$DEVICE\"" >>"$CONFIG"
-echo "IP=\"$IP\"" >>"$CONFIG"
-echo "NETWORK=\"$NETWORK\"" >>"$CONFIG"
-echo "NETMASK=\"$NETMASK\"" >>"$CONFIG"
-echo "GATEWAY=\"$GATEWAY\"" >>"$CONFIG"
-echo "NAMESERVERS=\"$NAMESERVERS\"" >>"$CONFIG"
-echo "IPRANGE_FROM=\"$IPRANGE_FROM\"" >>"$CONFIG"
-echo "IPRANGE_TO=\"$IPRANGE_TO\"" >>"$CONFIG"
+		NAMESERVERS="$(awk '/^nameserver/{printf "%s ",$2}' /etc/resolv.conf)"
+		GATEWAY="$(LANG=C LC_ALL=C route -n | awk '/^0\.0\.0\.0/{print $2; exit}')"
 
-find /lib/modules/$KERNEL/kernel/drivers/net -name \*.\*o | awk -F/ '{print $NF}' > $TMP
-CARDLIST=$(echo -e $(modinfo -d $(find /lib/modules/$KERNEL/kernel/drivers/net -name \*.\*o) | sed 's/"$/"\\n/g; s/>$/>\\n/g') | paste $TMP - | sort | sed 's/<none>/Kernel-Module/g;' | awk -F"\t" '{printf("%s|%s|",$1,$2)}; /^8139too|^3c59x|^tulip|^eepro100|^sis900/{ print "on|" }; { print "off|" }' | grep "\..*o" | tr -d '\n')
-rm -f "$TMP"
-IFS='|'
-$DIALOG --clear --backtitle "$BACKTITLE" --title "$TITLE_CARDS" --checklist "$MESSAGE_CARDS" 22 70 15 \
-$CARDLIST 2>"$TMP" || bailout 2
-unset IFS
-MODULES="$(sed 's,",,g;s,/, ,g;s,'\'',,g;' <$TMP)"
-echo "MODULES=\"$MODULES\"" >>"$CONFIG"
+		echo "DEVICE=\"$DEVICE\"" >>"$CONFIG"
+		echo "IP=\"$IP\"" >>"$CONFIG"
+		echo "NETWORK=\"$NETWORK\"" >>"$CONFIG"
+		echo "NETMASK=\"$NETMASK\"" >>"$CONFIG"
+		echo "GATEWAY=\"$GATEWAY\"" >>"$CONFIG"
+		echo "NAMESERVERS=\"$NAMESERVERS\"" >>"$CONFIG"
+		echo "IPRANGE_FROM=\"$IPRANGE_FROM\"" >>"$CONFIG"
+		echo "IPRANGE_TO=\"$IPRANGE_TO\"" >>"$CONFIG"
 
-# Check if iptables, bind9 or squid are present to build option list
-USE_SQUID=""; [ -x /etc/init.d/squid ] && USE_SQUID="true"
-# Caution: Use DNS cache only if we have other nameservers
-USE_BIND=""; [ -x /etc/init.d/bind9 -a -n "$NAMESERVERS" ] && USE_BIND="true"
-USE_IPTABLES=""; [ -x /sbin/iptables ] && USE_IPTABLES="true"
-USE_NX=""; [ -x /usr/bin/nxserver ] && USE_NX="true"
-rm -f "$TMP"
-$DIALOG --clear --backtitle "$BACKTITLE" --title "$TITLE_OPTIONS" --checklist "$MESSAGE_OPTIONS" 22 70 15 \
-"secure" "$ITEM_SECURE" on \
-${USE_IPTABLES:+masq "$ITEM_IPTABLES" on} \
-${USE_BIND:+dns "$ITEM_DNS (+4MB)" on} \
-${USE_SQUID:+squid "$ITEM_SQUID (+40MB)" off} \
-${USE_NX:+nx "$ITEM_NX" off} \
-2>"$TMP" || bailout 2
-OPTIONS="$(sed 's,",,g;s,/, ,g' <$TMP)"
-echo "OPTIONS=\"$OPTIONS\"" >>"$CONFIG"
-rm -f "$TMP"
-$DIALOG --clear --backtitle "$BACKTITLE" --title "$TITLE_APPEND" --inputbox "$MESSAGE_APPEND" 18 75 "" 2>"$TMP" || bailout 2
-APPEND="$(<$TMP)"
-[ -n "$APPEND" ] && echo "APPEND=\"$APPEND\"" >>"$CONFIG"
-rm -f "$TMP"
-echo "configured" >"$STATUS"
-$DIALOG --clear --backtitle "$BACKTITLE" --title "$TITLE_START" --yesno "$MESSAGE_START" 20 75 || bailout 0
-# Finally start it.
-exec $0 start
-;;
-*)
-# No options given, display chooser
-BACKTITLE="KANOTIX TERMINALSERVER"
-case "$LANGUAGE" in
-de|at|ch)
-TITLE_INTRO="Informationen zum KANOTIX-Terminalserver"
-MESSAGE_INTRO="Der KANOTIX-Terminalserver ist eine Sammlung von Skripten und Utilities, um auf einem Rechner, auf dem bereits KANOTIX läuft, Services wie DHCP, TFTP und NFS zu starten, so dass der Kernel, eine dynamisch generierte Init-Ramdisk sowie das komprimierte KANOTIX-Image über das Netzwerk exportiert werden können.
+		find /lib/modules/$KERNEL/kernel/drivers/net -name \*.\*o | awk -F/ '{print $NF}' > "$TMP"
+
+		CARDLIST=$(echo -e $(modinfo -d $(find /lib/modules/$KERNEL/kernel/drivers/net -name \*.\*o) | sed 's/"$/"\\n/g; s/>$/>\\n/g') | paste $TMP - | sort | sed 's/<none>/Kernel-Module/g;' | awk -F"\t" '{printf("%s|%s|",$1,$2)}; /^8139too|^3c59x|^tulip|^eepro100|^sis900/{ print "on|" }; { print "off|" }' | grep "\..*o" | tr -d '\n')
+		rm -f "$TMP"
+
+		IFS='|'
+		"$DIALOG" --clear --backtitle "$BACKTITLE" --title "$TITLE_CARDS" --checklist "$MESSAGE_CARDS" 22 70 15 \
+		$CARDLIST 2>"$TMP" || bailout 2
+		unset IFS
+
+		MODULES="$(sed 's,",,g;s,/, ,g;s,'\'',,g;' <$TMP)"
+		echo "MODULES=\"$MODULES\"" >>"$CONFIG"
+
+		# Check if iptables, bind9 or squid are present to build option list
+		USE_SQUID=""
+		[ -x /etc/init.d/squid ] && USE_SQUID="true"
+		
+		# Caution: Use DNS cache only if we have other nameservers
+		USE_BIND=""
+		[ -x /etc/init.d/bind9 -a -n "$NAMESERVERS" ] && USE_BIND="true"
+
+		USE_IPTABLES=""
+		[ -x /sbin/iptables ] && USE_IPTABLES="true"
+
+		USE_NX=""
+		[ -x /usr/bin/nxserver ] && USE_NX="true"
+
+		rm -f "$TMP"
+		"$DIALOG" --clear --backtitle "$BACKTITLE" --title "$TITLE_OPTIONS" --checklist "$MESSAGE_OPTIONS" 22 70 15 \
+			"secure" "$ITEM_SECURE" on \
+			${USE_IPTABLES:+masq "$ITEM_IPTABLES" on} \
+			${USE_BIND:+dns "$ITEM_DNS (+4MB)" on} \
+			${USE_SQUID:+squid "$ITEM_SQUID (+40MB)" off} \
+			${USE_NX:+nx "$ITEM_NX" off} \
+				2>"$TMP" || bailout 2
+		
+		OPTIONS="$(sed 's,",,g;s,/, ,g' <$TMP)"
+		echo "OPTIONS=\"$OPTIONS\"" >>"$CONFIG"
+		rm -f "$TMP"
+		
+		"$DIALOG" --clear --backtitle "$BACKTITLE" --title "$TITLE_APPEND" --inputbox "$MESSAGE_APPEND" 18 75 "" 2>"$TMP" || bailout 2
+		
+		APPEND="$(<$TMP)"
+		[ -n "$APPEND" ] && echo "APPEND=\"$APPEND\"" >>"$CONFIG"
+		rm -f "$TMP"
+
+		echo "configured" >"$STATUS"
+		"$DIALOG" --clear --backtitle "$BACKTITLE" --title "$TITLE_START" --yesno "$MESSAGE_START" 20 75 || bailout 0
+		
+		# Finally start it.
+		exec "$0" start
+		;;
+	*)
+		# No options given, display chooser
+		BACKTITLE="KANOTIX TERMINALSERVER"
+		case "$LANG" in
+			de*|at*|ch*)
+				TITLE_INTRO="Informationen zum KANOTIX-Terminalserver"
+				MESSAGE_INTRO="Der KANOTIX-Terminalserver ist eine Sammlung von Skripten und Utilities, um auf einem Rechner, auf dem bereits KANOTIX läuft, Services wie DHCP, TFTP und NFS zu starten, so dass der Kernel, eine dynamisch generierte Init-Ramdisk sowie das komprimierte KANOTIX-Image über das Netzwerk exportiert werden können.
 
 Um KANOTIX über das Netzwerk zu booten, benötigen die Client-Rechner eine von Linux unterstützte, PXE-bootfähige Netzwerkkarte. Die serverseitig gestarteten Skripte erlauben es, die IP-Bereiche für die Clients festzulegen und einige sicherheitsrelevante Optionen zu setzen (beispielsweise, ob ein Root-Zugang auf den Clients erlaubt sein soll oder nicht)."
-TITLE_CHOOSER="Terminalserver Menü"
-MESSAGE_CHOOSER="Bitte auswählen"
-MESSAGE_CONFIG="Server (neu) konfigurieren und (neu) starten"
-MESSAGE_START="Server starten"
-MESSAGE_STOP="Server anhalten"
-;;
-es)
-TITLE_INTRO="Información sobre el servidor de terminal KANOTIX"
-MESSAGE_INTRO="El servidor de terminal KANOTIX es una colección de scripts que arranca servicios como dhcp, tftp, nfs en una máquina que ya esté ejecutando KANOTIX, de manera que el Kernel, una imagen dinámica generada por initrd y la imagen-loop comprimida se comparten a través de la red.
+				TITLE_CHOOSER="Terminalserver Menü"
+				MESSAGE_CHOOSER="Bitte auswählen"
+				MESSAGE_CONFIG="Server (neu) konfigurieren und (neu) starten"
+				MESSAGE_START="Server starten"
+				MESSAGE_STOP="Server anhalten"
+				;;
+			es)
+				TITLE_INTRO="Información sobre el servidor de terminal KANOTIX"
+				MESSAGE_INTRO="El servidor de terminal KANOTIX es una colección de scripts que arranca servicios como dhcp, tftp, nfs en una máquina que ya esté ejecutando KANOTIX, de manera que el Kernel, una imagen dinámica generada por initrd y la imagen-loop comprimida se comparten a través de la red.
 
 Para arrancar Kanotix a través de la red, necesita una tarjeta de red soportada por linux y arrancable mediante PXE en cada máquina cliente. Los scripts de arranque en el servidor le dejan elegir el rango de direcciones IP asignadas así como algunas opciones relativas a la seguridad (por ejemplo, el permitir o no root-Shells en las máquinas cliente)."
-TITLE_CHOOSER="Menú Terminalserver"
-MESSAGE_CHOOSER="Por favor, seleccione:"
-MESSAGE_CONFIG="(Re)configurar el servidor y (re)arrancar"
-MESSAGE_START="Arrancar el servidor"
-MESSAGE_STOP="Parar el servidor"
-;;
-*)
-TITLE_INTRO="Information about the KANOTIX terminal server"
-MESSAGE_INTRO="The KANOTIX terminal server is a collection of scripts that starts services like dhcp, tftp, nfs on a machine already running KANOTIX, so that the Kernel, a dynamically generated initrd and the compressed loop-image are shared over the network.
+				TITLE_CHOOSER="Menú Terminalserver"
+				MESSAGE_CHOOSER="Por favor, seleccione:"
+				MESSAGE_CONFIG="(Re)configurar el servidor y (re)arrancar"
+				MESSAGE_START="Arrancar el servidor"
+				MESSAGE_STOP="Parar el servidor"
+				;;
+			*)
+				TITLE_INTRO="Information about the KANOTIX terminal server"
+				MESSAGE_INTRO="The KANOTIX terminal server is a collection of scripts that starts services like dhcp, tftp, nfs on a machine already running KANOTIX, so that the Kernel, a dynamically generated initrd and the compressed loop-image are shared over the network.
 
 To boot Kanotix over the network, you need a Linux-supported, PXE-bootable Network card on each client machine. The server-side startup scripts let you chose the range of dynamically assigned IP addresses and some options concerning security (for example, whether or not to allow root-Shells on the client machines)."
-TITLE_CHOOSER="Terminalserver Menu"
-MESSAGE_CHOOSER="Please select:"
-MESSAGE_CONFIG="(Re)configure server and (re)start"
-MESSAGE_START="Start server"
-MESSAGE_STOP="Stop server"
-;;
-esac
-$DIALOG --clear --backtitle "$BACKTITLE" --title "$TITLE_INTRO" --msgbox "$MESSAGE_INTRO" 18 75
-rm -f "$TMP"
-$DIALOG --backtitle "$BACKTITLE" --title "$TITLE_CHOOSER" --menu "$MESSAGE_CHOOSER" 18 45 12 \
-"setup" "$MESSAGE_CONFIG" \
-"start" "$MESSAGE_START" \
-"stop"  "$MESSAGE_STOP"  \
-2>"$TMP" || bailout 0
-OPTION="$(<$TMP)" ; rm -f "$TMP"
-exec $0 $OPTION
-;;
-esac
+				TITLE_CHOOSER="Terminalserver Menu"
+				MESSAGE_CHOOSER="Please select:"
+				MESSAGE_CONFIG="(Re)configure server and (re)start"
+				MESSAGE_START="Start server"
+				MESSAGE_STOP="Stop server"
+				;;
+		esac
+
+		$DIALOG --clear --backtitle "$BACKTITLE" --title "$TITLE_INTRO" --msgbox "$MESSAGE_INTRO" 18 75
+		rm -f "$TMP"
+
+		$DIALOG --backtitle "$BACKTITLE" --title "$TITLE_CHOOSER" --menu "$MESSAGE_CHOOSER" 18 45 12 \
+			"setup" "$MESSAGE_CONFIG" \
+			"start" "$MESSAGE_START" \
+			"stop"  "$MESSAGE_STOP"  \
+				2>"$TMP" || bailout 0
+		
+		OPTION="$(<$TMP)" ; rm -f "$TMP"
+		exec "$0" $OPTION
+		;;
+	esac
+
 bailout 0
+
