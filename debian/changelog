@@ -1,3 +1,9 @@
+kanotix-terminalserver (0.5.51) UNRELEASED; urgency=low
+
+  * NOT RELEASED YET
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Thu,  2 Nov 2006 22:17:25 +0100
+
 kanotix-terminalserver (0.5.50) unstable; urgency=low
 
   * don't add /usr/X11R6/bin/ to search path.
