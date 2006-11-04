@@ -6,7 +6,7 @@ Build-Depends: cdbs (>= 0.4.23-1.1), debhelper (>= 5.0.0)
 Standards-Version: 3.7.2
 
 Package: kanotix-terminalserver
-Depends: dhcp3-server, tftpd-hpa, nfs-kernel-server, mknbi, syslinux, portmap, sudo, busybox-kanotix, kanotix-su, mtools
+Depends: dhcp3-server, tftpd-hpa, nfs-kernel-server, mknbi, syslinux, portmap, sudo, busybox-kanotix (>= 1.2.2-1), kanotix-su, mtools
 Recommends: squid, freenx
 Architecture: all
 Description: Starts all services necessary to boot KANOTIX via PXE

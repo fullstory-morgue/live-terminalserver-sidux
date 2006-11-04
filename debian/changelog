@@ -1,8 +1,8 @@
-kanotix-terminalserver (0.5.51) UNRELEASED; urgency=low
+kanotix-terminalserver (0.5.51) unstable; urgency=low
 
-  * NOT RELEASED YET
+  * adapt to busybox-kanotix 1.2.2.
 
- -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Thu,  2 Nov 2006 22:17:25 +0100
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Sat,  4 Nov 2006 01:18:17 +0100
 
 kanotix-terminalserver (0.5.50) unstable; urgency=low
 

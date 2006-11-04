@@ -306,9 +306,9 @@ mkinitrd() {
 	cat /etc/default/distro > "${MINIROOT}/etc/default/distro"
 
 	# Copy Programs
-	if [ -f /bin/busybox ]; then
+	if [ -x /usr/lib/busybox-kanotix/busybox.static ]; then
 		# Use busybox
-		cp /bin/busybox "${MINIROOT}/static/busybox"
+		cp /usr/lib/busybox-kanotix/busybox.static "${MINIROOT}/static/busybox"
 		for f in $(busybox 2>&1|grep -A 100 functions|tail +2|sed "s/,//g;s/busybox//;s/linuxrc//;s/pivot_root//"); do
 			ln -s busybox "${MINIROOT}/static/$f"
 		done
