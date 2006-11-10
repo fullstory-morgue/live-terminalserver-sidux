@@ -1,8 +1,8 @@
-kanotix-terminalserver (0.5.52) UNRELEASED; urgency=low
+kanotix-terminalserver (0.5.52) unstable; urgency=low
 
-  * NOT RELEASED YET
+  * fix insecure tempfile handling.
 
- -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Sat,  4 Nov 2006 01:20:11 +0100
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Fri, 10 Nov 2006 14:43:36 +0100
 
 kanotix-terminalserver (0.5.51) unstable; urgency=low
 

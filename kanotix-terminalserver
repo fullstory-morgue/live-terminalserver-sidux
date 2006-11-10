@@ -47,7 +47,7 @@ STOPSERVICES="nfs-kernel-server nfs-common portmap dhcp3-server"
 XDIALOG_HIGH_DIALOG_COMPAT=1
 export XDIALOG_HIGH_DIALOG_COMPAT
 
-TMP="/tmp/${FLL_DISTRO_NAME}-terminalserver.menu.tmp$$"
+TMP="$(mktemp -p /tmp/ ${FLL_DISTRO_NAME}-terminalserver.menu-XXXXXXXXXX)"
    
 KERNEL="$(uname -r)"
 
@@ -283,7 +283,7 @@ mkinitrd() {
 
 	rm -rf "$MINIROOT"
 	mkdir -p "$MINIROOT"
-	RAMDISK="/tmp/${FLL_DISTRO_NAME}-ramdisk.$$"
+	RAMDISK="$(mktemp -p /tmp/ ${FLL_DISTRO_NAME}-ramdisk-XXXXXXXXXX)"
 	rm -f "$RAMDISK"
 
 	dd if=/dev/zero of="$RAMDISK" bs="${MINISIZE}k" count=1
