@@ -1,6 +1,7 @@
-kanotix-terminalserver (0.5.53) UNRELEASED; urgency=low
+live-terminalserver-sidux (0.6.0) UNRELEASED; urgency=low
 
   * NOT RELEASED YET
+  * initial sidux release.
 
  -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Fri, 10 Nov 2006 14:45:07 +0100
 

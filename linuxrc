@@ -1,12 +1,12 @@
 #!/static/ash
 #
-# KNOPPIX Terminalserver Client Startup Script
+# live-terminalserver-sidux Client Startup Script
 # (C) Aug 2002 Klaus Knopper <knoppix@knopper.net>
+# (C) 2004 Joerg Schirottke <master@kanotix.com>
+# (C) 2005-2006 Stefan Lippers-Hollmann <s.l-h@gmx.de>
 #
 # This script needs some commands that are not yet builtins
 # to ash.static (nfs-capable mount, pump, portmap).
-#
-# Squashfs autodetection for KANOTIX by Joerg Schirottke <master@kanotix.com>
 
 # hardcoded but configurable options
 # Default maximum size of dynamic ramdisk in kilobytes
@@ -75,18 +75,17 @@ export PATH
 umask 022
 
 # Be verbose
-echo "${WHITE}Welcome to the ${CYAN}K${MAGENTA}A${YELLOW}N${WHITE}O${RED}T${GREEN}I${BLUE}X${WHITE} Terminal Client!${NORMAL}"
+echo "${WHITE}Welcome to the sidux Terminal Client!${NORMAL}"
 
 # override tool behaviour through distro-defaults
-FLL_DISTRO_NAME="Kanotix"
-FLL_LIVE_USER="knoppix"
+FLL_DISTRO_NAME="Sidux"
+FLL_LIVE_USER="sidux"
 FLL_IMAGE_DIR="KNOPPIX"
 FLL_IMAGE_FILE="KNOPPIX"
 FLL_IMAGE_LOCATION="$FLL_IMAGE_DIR/$FLL_IMAGE_FILE"
 FLL_MOUNTPOINT="/KNOPPIX"
 
 test -r /etc/default/distro && . /etc/default/distro
-#echo "Visit us at irc://$FLL_IRC_SERVER:$FLL_IRC_PORT/$FLL_IRC_CHANNEL"
 
 # Mount /proc and /dev/pts
 mount -t proc none /proc
@@ -226,7 +225,7 @@ loadmodules() {
 }
 
 dropshell() {
-	echo "${CRE}${RED}Can't NFSmount KANOTIX filesystem, sorry.${NORMAL}"
+	echo "${CRE}${RED}Can't NFSmount live filesystem, sorry.${NORMAL}"
 	echo "${RED}Dropping you to a (very limited) shell.${NORMAL}"
 	echo "${RED}Press reset button to quit.${NORMAL}"
 	echo ""
@@ -409,7 +408,7 @@ else
 fi
 
 # Harddisk-installed script part version has been removed
-# (KANOTIX can be booted directly from HD now).
+# (sidux can be booted directly from HD now).
 
 # DEBUG
 # echo "6" > /proc/sys/kernel/printk
@@ -587,7 +586,7 @@ if test -n "$FOUND_KNOPPIX"; then
 	
 	exit 0
 else
-	echo "${CRE}${RED}Can't find KANOTIX filesystem, sorry.${NORMAL}"
+	echo "${CRE}${RED}Can't find live filesystem, sorry.${NORMAL}"
 	echo "${RED}Dropping you to a (very limited) shell.${NORMAL}"
 	echo "${RED}Press reset button to quit.${NORMAL}"
 	echo ""

@@ -1,23 +1,21 @@
-Source: kanotix-terminalserver
+Source: live-terminalserver-sidux
 Section: net
 Priority: optional
 Maintainer: Stefan Lippers-Hollmann <s.l-h@gmx.de>
 Build-Depends: cdbs (>= 0.4.23-1.1), debhelper (>= 5.0.0)
 Standards-Version: 3.7.2
 
-Package: kanotix-terminalserver
-Depends: dhcp3-server, tftpd-hpa, nfs-kernel-server, mknbi, syslinux, portmap, sudo, busybox-kanotix (>= 1.2.2-1), kanotix-su, mtools
+Package: live-terminalserver-sidux
+Depends: dhcp3-server, tftpd-hpa, nfs-kernel-server, mknbi, syslinux, portmap, sudo, busybox-sidux (>= 1.2.2-1), su-me, mtools
 Recommends: squid, freenx
 Architecture: all
-Description: Starts all services necessary to boot KANOTIX via PXE
- The KANOTIX terminalserver (busybox edition) is a collection of scripts 
+Description: Starts all services necessary to boot SIDUX via PXE
+ The sidux terminalserver (busybox edition) is a collection of scripts 
  that starts services like dhcp, tftp, nfs on a machine already running 
- KANOTIX, so that the Kernel, a dynamically generated initrd and the compressed
+ sidux, so that the Kernel, a dynamically generated initrd and the compressed
  loop-image are shared over the network.
- To boot Kanotix over the network, you need a Linux-supported,
+ To boot sidux over the network, you need a Linux-supported,
  PXE-bootable Network card on each client machine. The server-side
  startup scripts let you chose the range of dynamically assigned IP
  addresses and some options concerning security (for example, whether
  or not to allow root-Shells on the client machines).
- .
- Busybox edition, deprecate ash-kanotix.

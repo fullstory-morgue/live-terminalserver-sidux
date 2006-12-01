@@ -1,0 +1,9 @@
+[Desktop Entry]
+Comment[de]=Live Terminal-Server starten (remote sidux)
+Comment[es]=Arrancar Live Terminal Server (sidux remoto)
+Comment=Start Live Terminal Server (remote sidux)
+Exec=/usr/sbin/live-terminalserver
+Name[de]=Live Terminal-Server starten
+Name[es]=Arrancar Live Terminal Server
+Name=Start Live Terminal Server
+Type=Application
